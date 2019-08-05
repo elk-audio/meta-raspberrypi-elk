@@ -1,0 +1,10 @@
+[Unit]
+Description=Load the required rtdm drivers
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/load-drivers
+User=root
+
+[Install]
+WantedBy=multi-user.target
