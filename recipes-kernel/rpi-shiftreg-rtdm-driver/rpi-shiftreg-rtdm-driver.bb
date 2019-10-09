@@ -4,16 +4,15 @@ LIC_FILES_CHKSUM = "file://${WORKDIR}/git/LICENSE;md5=2c1c00f9d3ed9e24fa69b932b7
 
 inherit module
 
-SRC_URI = "git://github.com/shdrmr/spi-bcm283x-rtdm.git;branch=${SRCBRANCH}"
+SRC_URI = "git://git@bitbucket.org/mindswteam/rpi_shiftreg_rtdm_driver.git;protocol=ssh;nobranch=1"
 
-S = "${WORKDIR}/git/"
+S = "${WORKDIR}/git/rpi/sika/"
 
-SRCREV = "2435c3e9d20a857b87cfd60b9d02966562194caa"
-SRCBRANCH = "master"
+SRCREV = "193ab2ba22338d0dbd0f326ac49a4ee9773dab19"
 
 # The inherit of module.bbclass will automatically name module packages with
 # "kernel-module-" prefix as required by the oe-core build environment.
-RPROVIDES_${PN} = "kernel-module-spi-bcm283x-rtdm-${KERNEL_VERSION}"
+RPROVIDES_${PN} = "kernel-module-rpi-shiftreg-rtdm-${KERNEL_VERSION}"
 
 MODULE_INSTALL_DIR = "/lib/modules/${KERNEL_VERSION}"
 
