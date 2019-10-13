@@ -1,5 +1,7 @@
 LINUX_VERSION = "4.14.78"
 
+PV = "${LINUX_VERSION}"
+
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 #unset config vars since we have a custom defconfig
