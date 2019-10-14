@@ -32,4 +32,4 @@ do_prepare_kernel () {
     ${xenomai_src}/scripts/prepare-kernel.sh --arch=arm64 --linux=${linux_src} --default
 }
 
-#addtask prepare_kernel after do_patch before do_configure
+addtask prepare_kernel after do_patch before do_configure

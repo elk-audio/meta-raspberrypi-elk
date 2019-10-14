@@ -4,8 +4,7 @@ do_deploy_append() {
         echo "# Disable Bluetooth" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
         echo "dtoverlay=pi3-disable-bt" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
     fi
-	echo "dtparam=i2s=on" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
-	echo "enable_uart=1" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
-	echo "dtparam=i2c_arm=on" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
+    echo "dtparam=i2s=on" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
+    echo "enable_uart=1" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
+    echo "dtparam=i2c_arm=on" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
 }
-

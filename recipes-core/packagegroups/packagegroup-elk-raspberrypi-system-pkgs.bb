@@ -4,9 +4,9 @@ inherit packagegroup
 
 RDEPENDS_packagegroup-elk-raspberrypi-system-pkgs = " \
     raspberrypi-systemd-services \
-	 linux-firmware-bcm43430 \
+    linux-firmware-bcm43430 \
     iw \
-	rpi-rtdm-audio-driver \
-	rpi-shiftreg-rtdm-driver \
-	elk-system-conf \
+    rpi-rtdm-audio-driver \
+    rpi-shiftreg-rtdm-driver \
+    elk-system-conf \
     "

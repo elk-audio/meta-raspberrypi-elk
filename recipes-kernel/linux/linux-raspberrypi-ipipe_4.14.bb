@@ -23,7 +23,7 @@ CMDLINE_prepend = 'dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_hol
 
 CMDLINE_append = ' xenomai.allowed_group=2004 xenomai.sysheap_size=256 xenomai.state=enabled xenomai.smi=detect xenomai.smi_mask=1' 
 
-do_prepare_kernel() {     
+do_prepare_kernel() {
   xenomai_src="${WORKDIR}/xenomai-3.0.8/"
 
   echo "Apply pre-patch"
@@ -33,6 +33,6 @@ do_prepare_kernel() {
   echo "Apply post-patch"
   cd ${S} && patch -p1 < ${WORKDIR}/post-ipipe-core-4.14.85-arm-6.patch
   patch -p1 < ${WORKDIR}/0002-fix-for-RT-safe-dma.patch
-}                         
+}
 
-#addtask prepare_kernel after do_patch before do_configure
+addtask prepare_kernel after do_patch before do_configure
