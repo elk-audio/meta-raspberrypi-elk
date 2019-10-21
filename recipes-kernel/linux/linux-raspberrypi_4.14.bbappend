@@ -13,6 +13,7 @@ SRCREV = "af3ff2aed7d3d8991296d882febff75418ab6f83"
 SRC_URI += " \
     file://0001-Rpi-ipipe-patch-for-4.14.78.patch \
     file://0002-fix-for-RT-safe-dma.patch \
+    file://0003-disable-hdmi-audio.patch \
     file://defconfig \
     "
 
