@@ -1,0 +1,6 @@
+#!/bin/sh
+VER="0.2.0"
+NAME="elk-update"
+FILES="$@"
+for i in $FILES;do
+        echo $i;done | cpio -ov -H crc >  ${NAME}_${VER}.swu
