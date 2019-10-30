@@ -1,1 +1,0 @@
-ACTION=="add", KERNEL=="sd*", SUBSYSTEM=="block", ENV{ID_FS_USAGE}=="filesystem", RUN+="/bin/systemctl --no-block start swupdate-usb@%k.service"
