@@ -8,11 +8,11 @@ SRC_URI = "git://git@bitbucket.org/mindswteam/rpi_shiftreg_rtdm_driver.git;proto
 
 S = "${WORKDIR}/git/rpi/sika/"
 
-SRCREV = "193ab2ba22338d0dbd0f326ac49a4ee9773dab19"
+SRCREV = "72d2e0b8811fbeca3577190f77be1b904c47729d"
 
 # The inherit of module.bbclass will automatically name module packages with
 # "kernel-module-" prefix as required by the oe-core build environment.
-RPROVIDES_${PN} = "kernel-module-rpi-shiftreg-rtdm-${KERNEL_VERSION}"
+RPROVIDES_${PN} = "kernel-module-shiftreg-rtdm-${KERNEL_VERSION}"
 
 MODULE_INSTALL_DIR = "/lib/modules/${KERNEL_VERSION}"
 
