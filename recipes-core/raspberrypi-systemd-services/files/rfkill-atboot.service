@@ -1,0 +1,10 @@
+[Unit]
+Description=Rf kill at boot command
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/rfkill unblock all
+
+[Install]
+WantedBy=custom-elk.target
