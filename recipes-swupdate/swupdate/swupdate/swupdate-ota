@@ -1,0 +1,19 @@
+#!/bin/sh
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/home/mind/scripts
+
+DESC="swupdate over the network"
+NAME="swupdate-ota"
+DAEMON=/usr/bin/swupdate
+
+rootfs=`mount | grep "on / type" | cut -d':' -f 2 | cut -d' ' -f 1`
+
+if [ $rootfs == '/dev/mmcblk0p2' ];then
+	selection="-e stable,mmcblk0p3"
+else
+	selection="-e stable,mmcblk0p2"
+fi
+
+echo "Starting $DESC ..."
+echo "rootfs is mounted on $rootfs and selection is $selection"
+
+swupdate -v ${selection} -w "-r /www"

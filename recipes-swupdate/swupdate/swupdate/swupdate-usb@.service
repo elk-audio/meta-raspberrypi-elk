@@ -1,0 +1,8 @@
+[Unit]
+Description=usb media swupdate service
+
+[Service]
+Type=oneshot
+ExecStartPre=
+ExecStart=/usr/bin/swupdate-client %I
+ExecStopPost=
