@@ -7,4 +7,5 @@ do_deploy_append() {
     echo "dtparam=i2s=on" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
     echo "enable_uart=1" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
     echo "dtparam=i2c_arm=on" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
+    echo "dtparam=i2c_vc=on" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
 }
