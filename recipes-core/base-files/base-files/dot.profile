@@ -10,7 +10,7 @@ export LD_LIBRARY_PATH=/usr/xenomai/lib:/usr/local/lib:$LD_LIBRARY_PATH
 #Might fail after "su - myuser" when /dev/tty* is not writable by "myuser".
 mesg n 2>/dev/null
 
-export PATH=$PATH:/sbin
+export PATH=$PATH:/sbin:/usr/sbin
 if [ "$PS1" ]; then
 complete -cf sudo
 fi
