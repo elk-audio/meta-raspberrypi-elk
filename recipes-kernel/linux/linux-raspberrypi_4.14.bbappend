@@ -14,6 +14,7 @@ SRC_URI += " \
     file://0001-Rpi-ipipe-patch-for-4.14.78.patch \
     file://0002-fix-for-RT-safe-dma.patch \
     file://0003-disable-hdmi-audio.patch \
+    file://0004-fix-for-lan7xx.patch \
     file://defconfig \
     "
 
