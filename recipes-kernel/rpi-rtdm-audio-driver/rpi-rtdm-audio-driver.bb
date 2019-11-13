@@ -8,7 +8,7 @@ SRC_URI = "git://git@bitbucket.org/mindswteam/rpi-rtdm-audio-driver.git;protocol
 
 S = "${WORKDIR}/git"
 
-SRCREV = "a6f4fbad7140b706bfc704b398a267877bba8e37"
+SRCREV = "ca8b9602f72d24852cdb7d680fb86e35342a7de0"
 
 # The inherit of module.bbclass will automatically name module packages with
 # "kernel-module-" prefix as required by the oe-core build environment.
