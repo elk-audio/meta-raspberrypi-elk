@@ -4,12 +4,16 @@ LICENSE = "CLOSED"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
-SRC_URI = "file://get-latest-swu"
+SRC_URI = " \
+    file://get-latest-swu \
+    file://elk_utils \
+    "
 
 do_install() {
     install -d ${D}${bindir}
     install -d ${D}${sysconfdir}
     install -m 0755 ${WORKDIR}/get-latest-swu ${D}${bindir}
+    install -m 0755 ${WORKDIR}/elk_utils ${D}${bindir}
 }
 
 FILES_${PN} = "${bindir}/*"

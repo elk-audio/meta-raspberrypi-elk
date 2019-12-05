@@ -1,0 +1,70 @@
+#!/bin/sh
+
+case "$1" in
+
+boot_count)
+    echo "set boot_count $2"
+    mount /dev/mmcblk0p1 /boot
+    fw_setenv boot_count "$2" && sync
+    umount /boot
+    ;;
+
+otg_speed)
+    echo "set dwc_otg.speed $2"
+    mount /dev/mmcblk0p1 /boot
+    if [ "$2" -eq "0" ]; then
+    	fw_setenv set_boot_args "if test \"\${default_part}\" = \"0\" ;then setenv bootargs 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000  dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 dwc_otg.lpm_enable=0 console=ttyS0,115200 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait xenomai.allowed_group=2004; setenv kimage Image0; else setenv bootargs 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000  dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 dwc_otg.lpm_enable=0 console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait xenomai.allowed_group=2004; setenv kimage Image1; fi"
+	sync
+        umount /boot
+	exit 0;
+    fi
+    fw_setenv set_boot_args "if test \"\${default_part}\" = \"0\" ;then setenv bootargs 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000  dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 dwc_otg.lpm_enable=0 console=ttyS0,115200 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait xenomai.allowed_group=2004 dwc_otg.speed=$2; setenv kimage Image0; else setenv bootargs 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000  dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 dwc_otg.lpm_enable=0 console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait xenomai.allowed_group=2004 dwc_otg.speed=$2; setenv kimage Image1; fi"
+    sync
+    umount /boot
+    exit 0;
+    ;;
+
+default_part)
+    echo "set deafult_part $2"
+    mount /dev/mmcblk0p1 /boot
+    fw_setenv default_part "$2" && sync
+    umount /boot
+    ;;
+
+fallback_part)
+    echo "set fallback_part $2"
+    mount /dev/mmcblk0p1 /boot
+    fw_setenv fallback_part "$2" && sync
+    umount /boot
+    ;;
+
+ro_rootfs)
+    if [ "$2" = "enable" ]; then
+    	sed -i '/root/{s/\bdefaults\b/ro/}' /etc/fstab
+    elif [ "$2" = "disable" ]; then
+	rootfs=`mount | grep "on / type" | cut -d':' -f 2 | cut -d' ' -f 1`
+	if [ $rootfs == '/dev/mmcblk0p2' ];then
+	        mount -o remount,rw /dev/mmcblk0p2 /
+	else
+	        mount -o remount,rw /dev/mmcblk0p3 /
+	fi
+    	sed -i '/root/{s/\bro\b/defaults/}' /etc/fstab
+    else
+	echo "wrong option for ro_rootfs"
+	exit 1;
+    fi
+    ;;
+
+*)
+    echo "Usage: sudo set_fw_env [VARIABLE] [VALUE]"
+    echo "example: sudo set_fw_env boot_count 0"
+    echo ""
+    echo "	VARIABLES: boot_count
+   		   otg_speed
+		   default_part 
+		   fallback_part
+		   ro_rootfs"
+    exit 0
+    ;;
+
+esac
