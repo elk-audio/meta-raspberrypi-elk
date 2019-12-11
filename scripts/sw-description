@@ -8,7 +8,7 @@ software =
         {
             images: (
             {
-                filename = "elk-sika-image-dev-raspberrypi3-64.ext4.gz";
+                filename = "elk-sika-image-dev-raspberrypi3.ext4.gz";
                 type = "raw";
                 device = "/dev/mmcblk0p2";
                 compressed = true;
@@ -18,8 +18,8 @@ software =
 
             files: (
                     {
-                        filename = "Image0";
-                        path = "/boot/Image0"
+                        filename = "uImage0";
+                        path = "/boot/uImage0"
                     }
             );
 
@@ -46,7 +46,7 @@ software =
         {
             images: (
                 {
-                    filename = "elk-sika-image-dev-raspberrypi3-64.ext4.gz";
+                    filename = "elk-sika-image-dev-raspberrypi3.ext4.gz";
                     type = "raw";
                     device = "/dev/mmcblk0p3";
                     compressed = true;
@@ -56,8 +56,8 @@ software =
 
             files: (
                 {
-                    filename = "Image1";
-                    path = "/boot/Image1"
+                    filename = "uImage1";
+                    path = "/boot/uImage1"
                 }
             );
 

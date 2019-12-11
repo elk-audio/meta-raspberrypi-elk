@@ -1,0 +1,12 @@
+[Unit]
+Description=Change udata permissions on first boot to mind user
+After=load-drivers.service
+ConditionPathExists=/udata/change_perms
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/change-udata-perms
+User=root
+
+[Install]
+WantedBy=multi-user.target

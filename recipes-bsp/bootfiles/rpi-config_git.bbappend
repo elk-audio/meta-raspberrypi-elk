@@ -1,3 +1,6 @@
+# disable vc4-kms-v3d as we sould like to use the fb
+VC4GRAPHICS = "0"
+
 do_deploy_append() {
     # disable BT for Pi3/Pi0W if any
     if [ "${DISABLE_BT}" = "1" ]; then

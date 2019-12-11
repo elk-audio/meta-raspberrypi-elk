@@ -1,0 +1,25 @@
+From 163e78940c164da6ebbc3ceda3c1419fe8ca4a25 Mon Sep 17 00:00:00 2001
+From: kknitin <nitin.kulkarni@mindmusiclabs.com>
+Date: Thu, 17 Oct 2019 16:13:51 +0000
+Subject: [PATCH] disable hdmi audio
+
+---
+ arch/arm/boot/dts/bcm283x.dtsi | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/arm/boot/dts/bcm283x.dtsi b/arch/arm/boot/dts/bcm283x.dtsi
+index 22eca6fad427..9d43a0c10450 100644
+--- a/arch/arm/boot/dts/bcm283x.dtsi
++++ b/arch/arm/boot/dts/bcm283x.dtsi
+@@ -626,8 +626,6 @@
+ 			clocks = <&clocks BCM2835_PLLH_PIX>,
+ 				 <&clocks BCM2835_CLOCK_HSM>;
+ 			clock-names = "pixel", "hdmi";
+-			dmas = <&dma 17>;
+-			dma-names = "audio-rx";
+ 			status = "disabled";
+ 		};
+ 
+-- 
+2.17.1
+

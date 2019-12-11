@@ -11,7 +11,6 @@ do_preinst()
     fi
     fsck /dev/mmcblk0p1 -y
     fsck ${clean_disk}
-    #tc qdisc add dev wlan0 root tbf rate 1mbit burst 32kbit latency 50ms
     mount /dev/mmcblk0p1 /boot
     exit 0
 }
@@ -19,7 +18,6 @@ do_preinst()
 do_postinst()
 {
     echo "do_postinst"
-    #tc qdisc del root dev wlan0
     exit 0
 }
 
