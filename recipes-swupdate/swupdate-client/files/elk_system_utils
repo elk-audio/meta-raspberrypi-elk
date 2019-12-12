@@ -29,13 +29,13 @@ case "$1" in
     mount /dev/mmcblk0p1 /boot
     sleep 1
     if [ "$2" -eq "2" ]; then
-        fw_setenv set_boot_args "if test \"\${default_part}\" = \"0\" ;then setenv bootargs 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000  dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 dwc_otg.lpm_enable=0 console=ttyS0,115200 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait xenomai.allowed_group=2004; setenv kimage Image0; else setenv bootargs 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000  dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 dwc_otg.lpm_enable=0 console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait xenomai.allowed_group=2004; setenv kimage Image1; fi"
+        fw_setenv set_boot_args "if test \"\${default_part}\" = \"0\" ;then setenv bootargs 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000  dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 dwc_otg.lpm_enable=0 console=ttyS0,115200 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait xenomai.allowed_group=2004; setenv kimage uImage0; else setenv bootargs 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000  dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 dwc_otg.lpm_enable=0 console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait xenomai.allowed_group=2004; setenv kimage uImage1; fi"
         sync
         sleep 1
         umount /boot
     exit 0;
     fi
-    fw_setenv set_boot_args "if test \"\${default_part}\" = \"0\" ;then setenv bootargs 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000  dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 dwc_otg.lpm_enable=0 console=ttyS0,115200 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait xenomai.allowed_group=2004 dwc_otg.speed=$2; setenv kimage Image0; else setenv bootargs 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000  dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 dwc_otg.lpm_enable=0 console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait xenomai.allowed_group=2004 dwc_otg.speed=$2; setenv kimage Image1; fi"
+    fw_setenv set_boot_args "if test \"\${default_part}\" = \"0\" ;then setenv bootargs 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000  dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 dwc_otg.lpm_enable=0 console=ttyS0,115200 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait xenomai.allowed_group=2004 dwc_otg.speed=$2; setenv kimage uImage0; else setenv bootargs 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000  dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 dwc_otg.lpm_enable=0 console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait xenomai.allowed_group=2004 dwc_otg.speed=$2; setenv kimage uImage1; fi"
     sync
     sleep 1
     umount /boot
