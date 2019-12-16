@@ -1,4 +1,4 @@
-SUMMARY = "Recipe for SPI RTDM driver for bcm2836 SOCs"
+SUMMARY = "Recipe for shiftregister rtdm driver for bcm2836 SOCs"
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://${WORKDIR}/git/LICENSE;md5=2c1c00f9d3ed9e24fa69b932b7e7aff2"
 
@@ -8,7 +8,7 @@ SRC_URI = "git://git@bitbucket.org/mindswteam/rpi_shiftreg_rtdm_driver.git;proto
 
 S = "${WORKDIR}/git/rpi/sika/"
 
-SRCREV = "805496a1655dddfd3be402f89168f5f7ec0463dd"
+SRCREV = "5950236b650eebb0996189c58d7f1e481a70397d"
 
 # The inherit of module.bbclass will automatically name module packages with
 # "kernel-module-" prefix as required by the oe-core build environment.
