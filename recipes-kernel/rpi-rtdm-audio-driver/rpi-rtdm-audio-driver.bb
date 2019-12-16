@@ -8,9 +8,11 @@ SRC_URI = "git://git@bitbucket.org/mindswteam/rpi-rtdm-audio-driver.git;protocol
 
 S = "${WORKDIR}/git"
 
-SRCREV = "24da69bff692bbf20c997bc270c4591ad7438d8c"
+SRCREV = "a55eec35817cc3ac1b30249c333022f464695906"
 
 RPROVIDES_${PN} += "kernel-module-audio-rtdm-${KERNEL_VERSION}"
+RPROVIDES_${PN} += "kernel-module-bcm2835-i2s-elk-${KERNEL_VERSION}"
+RPROVIDES_${PN} += "kernel-module-pcm3168a-elk-${KERNEL_VERSION}"
 
 MODULE_INSTALL_DIR = "/lib/modules/${KERNEL_VERSION}"
 
