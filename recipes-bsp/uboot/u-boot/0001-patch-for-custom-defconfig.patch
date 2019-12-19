@@ -1,14 +1,14 @@
-From 8d420c8f0fd257df9cee065aa6e1fac5f41c1ae1 Mon Sep 17 00:00:00 2001
-From: sharan <sharan.yagneswar@mindmusiclabs.com>
-Date: Wed, 11 Dec 2019 17:38:44 +0000
-Subject: [PATCH] elkpi 32b defconfig
+From 740cea07bd744491358e01c50f51d93b89841cce Mon Sep 17 00:00:00 2001
+From: kknitin <nitin.kulkarni@mindmusiclabs.com>
+Date: Tue, 17 Dec 2019 16:40:32 +0000
+Subject: [PATCH] patch for custom defconfig
 
 ---
  configs/rpi_3_32b_defconfig | 1168 +++++++++++++++++++++++++++++++++++
  1 file changed, 1168 insertions(+)
 
 diff --git a/configs/rpi_3_32b_defconfig b/configs/rpi_3_32b_defconfig
-index bbf902bb91..9ba0e1da6f 100644
+index bbf902bb91..55400bab1d 100644
 --- a/configs/rpi_3_32b_defconfig
 +++ b/configs/rpi_3_32b_defconfig
 @@ -1,43 +1,1211 @@
@@ -957,7 +957,7 @@ index bbf902bb91..9ba0e1da6f 100644
 +#
 +# Serial drivers
 +#
-+CONFIG_BAUDRATE=115200
++CONFIG_BAUDRATE=57600
  # CONFIG_REQUIRE_SERIAL_CONSOLE is not set
 +# CONFIG_SPECIFY_CONSOLE_INDEX is not set
 +CONFIG_SERIAL_PRESENT=y
