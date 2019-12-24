@@ -1,8 +1,8 @@
-DESCRIPTION = "All custom systemd services for the RaspberryPi"
-LICENSE = "CLOSED"
-PR = "r0"
+DESCRIPTION = "All custom systemd services related to the machine Raspberrypi"
+HOMEPAGE = "https://github.com/elk-audio/meta-raspberrypi-elk"
+LICENSE = "GPL-2.0"
+LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0;md5=801f80980d171dd6425610833a22dbe6"
 PN = "raspberrypi-systemd-services"
-PV = "0.1"
 S = "${WORKDIR}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"

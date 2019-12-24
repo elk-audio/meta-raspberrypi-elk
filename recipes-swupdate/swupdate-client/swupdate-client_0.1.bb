@@ -1,6 +1,7 @@
 DESCRIPTION = "Recipe for installing Swupdate-client which starts the swupdate"
-SECTION = "misc"
-LICENSE = "CLOSED"
+HOMEPAGE = "https://github.com/elk-audio/meta-raspberrypi-elk"
+LICENSE = "GPL-2.0"
+LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0;md5=801f80980d171dd6425610833a22dbe6"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 

@@ -9,9 +9,9 @@ SRC_URI += "file://dot.profile \
 UDEV_RULES_DIR = "/etc/udev/rules.d"
 
 do_install_append() {
-    install -m 0755 ${WORKDIR}/dot.profile ${D}${sysconfdir}/skel/.profile
-    install -m 0755 ${WORKDIR}/dot.zshrc ${D}${sysconfdir}/skel/.zshrc
-    install -m 0755 ${WORKDIR}/fstab ${D}${sysconfdir}/fstab
+    install -m 0644 ${WORKDIR}/dot.profile ${D}${sysconfdir}/skel/.profile
+    install -m 0644 ${WORKDIR}/dot.zshrc ${D}${sysconfdir}/skel/.zshrc
+    install -m 0644 ${WORKDIR}/fstab ${D}${sysconfdir}/fstab
     install -d ${D}${UDEV_RULES_DIR}
     install -m 0644 ${WORKDIR}/90-i2c.rules ${D}${UDEV_RULES_DIR}
 }

@@ -1,5 +1,5 @@
+DESCRIPTION = "Append recipe to use xenomai- enabled kernel for 64 bit version of Elk, but this is not used/supported currently"
 LINUX_VERSION = "4.14.78"
-
 PV = "${LINUX_VERSION}"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
