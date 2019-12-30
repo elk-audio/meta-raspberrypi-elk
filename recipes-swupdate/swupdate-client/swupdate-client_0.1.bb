@@ -5,10 +5,10 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0;md5=80
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
-SRC_URI = " \
+SRC_URI = "\
     file://get-latest-swu \
     file://elk_system_utils \
-    "
+"
 
 do_install() {
     install -d ${D}${bindir}

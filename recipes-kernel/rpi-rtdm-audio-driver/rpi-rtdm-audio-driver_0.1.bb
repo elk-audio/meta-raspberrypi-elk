@@ -1,4 +1,4 @@
-UMMARY = "Recipe for RPI rtdm audio driver"
+SUMMARY = "Recipe for RPI rtdm audio driver"
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=4a0f8ad6a793571b331b0e19e3dd925c"
 
@@ -6,9 +6,9 @@ inherit module
 
 SRC_URI = "git://git@bitbucket.org/mindswteam/rpi-rtdm-audio-driver.git;protocol=ssh;nobranch=1"
 
-S = "${WORKDIR}/git"
-
 SRCREV = "5fe0e2f8fab07880997d22bd081b0ef36f106e77"
+
+S = "${WORKDIR}/git"
 
 RPROVIDES_${PN} += "kernel-module-audio-rtdm-${KERNEL_VERSION}"
 RPROVIDES_${PN} += "kernel-module-bcm2835-i2s-elk-${KERNEL_VERSION}"

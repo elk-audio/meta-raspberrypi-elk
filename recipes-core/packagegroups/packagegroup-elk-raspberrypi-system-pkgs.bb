@@ -20,4 +20,4 @@ RDEPENDS_packagegroup-elk-raspberrypi-system-pkgs = "\
     rpi-rtdm-audio-driver \
     rpi-shiftreg-rtdm-driver \
     elk-system-conf \
-    "
+"

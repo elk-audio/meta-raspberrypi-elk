@@ -1,4 +1,4 @@
-DESCRIPTION = "All custom systemd services related to the machine Raspberrypi"
+SUMMARY = "All custom systemd services related to the machine Raspberrypi"
 HOMEPAGE = "https://github.com/elk-audio/meta-raspberrypi-elk"
 LICENSE = "GPL-2.0"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0;md5=801f80980d171dd6425610833a22dbe6"
@@ -14,11 +14,11 @@ FILES_${PN} += "${systemd_system_unitdir}/*"
 INHIBIT_PACKAGE_STRIP = "1"
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
-SRC_URI = " \
+SRC_URI = "\
     file://load-drivers.service \
     file://rfkill-atboot.service \
     file://udata-perms.service \
-    "
+"
 
 do_install () {
     install -d ${D}${systemd_system_unitdir}
