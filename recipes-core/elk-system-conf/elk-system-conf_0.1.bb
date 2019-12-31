@@ -1,4 +1,4 @@
-DESCRIPTION = "Recipe for installing system wide Upcore specific conf files"
+SUMMARY = "Recipe for installing system wide Upcore specific conf files"
 HOMEPAGE = "https://github.com/elk-audio/meta-raspberrypi-elk"
 SECTION = "misc"
 LICENSE = "GPL-2.0"
