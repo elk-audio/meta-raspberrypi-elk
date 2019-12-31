@@ -8,18 +8,18 @@ LINUX_VERSION = "4.14.85"
 SRCREV = "802d8776632344a4354d8ef5f142611a4c878570"
 
 SRC_URI = "\
-        git://github.com/raspberrypi/linux.git;branch=rpi-4.14.y \
-        http://xenomai.org/downloads/xenomai/stable/xenomai-3.0.8.tar.bz2;name=xeno \
-        file://pre-ipipe-core-4.14.85-arm-6.patch \
-        file://ipipe-core-4.14.85-arm-6.patch \
-        file://post-ipipe-core-4.14.85-arm-6.patch \
-        file://0002-fix-for-RT-safe-dma.patch \
-        file://0003-disable-hdmi-audio.patch \
-        file://0004-fix-for-lan7xx.patch \
-        file://0001-Made-clk-bcm2835-aux-irqchip-ipipe-aware.patch \
-        file://fragment.cfg \
-        file://defconfig \
-        "
+    git://github.com/raspberrypi/linux.git;branch=rpi-4.14.y \
+    http://xenomai.org/downloads/xenomai/stable/xenomai-3.0.8.tar.bz2;name=xeno \
+    file://pre-ipipe-core-4.14.85-arm-6.patch \
+    file://ipipe-core-4.14.85-arm-6.patch \
+    file://post-ipipe-core-4.14.85-arm-6.patch \
+    file://0002-fix-for-RT-safe-dma.patch \
+    file://0003-disable-hdmi-audio.patch \
+    file://0004-fix-for-lan7xx.patch \
+    file://0001-Made-clk-bcm2835-aux-irqchip-ipipe-aware.patch \
+    file://fragment.cfg \
+    file://defconfig \
+"
 
 ARM_KEEP_OABI = "0"
 

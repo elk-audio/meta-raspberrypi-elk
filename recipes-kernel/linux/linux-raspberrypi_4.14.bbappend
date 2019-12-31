@@ -16,7 +16,7 @@ SRC_URI += " \
     file://0003-disable-hdmi-audio.patch \
     file://0004-fix-for-lan7xx.patch \
     file://defconfig \
-    "
+"
 
 do_prepare_kernel () {
     linux_src="${S}"

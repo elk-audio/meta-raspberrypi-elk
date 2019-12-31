@@ -1,10 +1,11 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
-SRC_URI += "file://dot.profile \
-            file://dot.zshrc \
-            file://fstab \
-            file://90-i2c.rules \
-           "
+SRC_URI += "\
+    file://dot.profile \
+    file://dot.zshrc \
+    file://fstab \
+    file://90-i2c.rules \
+"
 
 UDEV_RULES_DIR = "/etc/udev/rules.d"
 UDATA_DIR = "/udata"
