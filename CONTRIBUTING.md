@@ -9,6 +9,7 @@ When writing a bug report, try to be as complete as you can regarding the contex
   * What is your run-time setup (plugins, buffer size, audio/CV channels, sensors, etc.)
   * (if working on a plugin) what is your build environment
   * If the issue is about SUSHI, SENSEI, TWINE or a plugin, try to reproduce it with the SUSHI AppImage for Linux or using another audio frontend (offline, dummy)
+  * What is your tool-chain setup (Yocto version, Host environment, any specific change in config you did)
   * Include relevant files that helps understand your issue or, better, to reproduce it
 
 ## Submitting a PR

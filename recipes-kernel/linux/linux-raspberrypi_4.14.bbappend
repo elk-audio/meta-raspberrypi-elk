@@ -1,5 +1,5 @@
+DESCRIPTION = "Append recipe to use xenomai- enabled kernel for 64 bit version of Elk, but this is not used/supported currently"
 LINUX_VERSION = "4.14.78"
-
 PV = "${LINUX_VERSION}"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
@@ -16,7 +16,7 @@ SRC_URI += " \
     file://0003-disable-hdmi-audio.patch \
     file://0004-fix-for-lan7xx.patch \
     file://defconfig \
-    "
+"
 
 do_prepare_kernel () {
     linux_src="${S}"

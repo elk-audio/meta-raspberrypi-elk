@@ -1,4 +1,5 @@
-# AARCH 64 is only supported in xenomai-next branch.
+DESCRIPTION = "Append recipe to use xenomai-next for 64 bit version of Elk, but this is not used/supported currently"
+
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 SRC_URI_raspberrypi3-64 = "git://gitlab.denx.de/Xenomai/xenomai.git;name=xenolib;protocol=https;branch=next"

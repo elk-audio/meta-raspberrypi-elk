@@ -1,4 +1,4 @@
-# disable vc4-kms-v3d as we sould like to use the fb
+# disable vc4-kms-v3d since we only use framebuffer
 VC4GRAPHICS = "0"
 
 do_deploy_append() {
