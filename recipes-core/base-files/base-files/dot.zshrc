@@ -1,6 +1,7 @@
 # If you come from bash you might have to change your $PATH.
 export PATH=/bin:/usr/bin:/sbin:/usr/local/bin:$PATH
 export LD_LIBRARY_PATH=/usr/xenomai/lib:/usr/local/lib:$LD_LIBRARY_PATH
+export TERM=xterm-256color
 
 # Path to your oh-my-zsh installation.
 export ZSH="/etc/oh-my-zsh"

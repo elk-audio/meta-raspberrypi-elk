@@ -14,3 +14,5 @@ export PATH=$PATH:/sbin:/usr/sbin
 if [ "$PS1" ]; then
 complete -cf sudo
 fi
+
+export TERM=xterm-256color
