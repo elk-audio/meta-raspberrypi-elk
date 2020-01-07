@@ -8,7 +8,7 @@ software =
         {
             images: (
                 {
-                    filename = "elk-sika-image-dev-raspberrypi3.ext4.gz";
+                    filename = "<name of the compressed rootfs in ext4.gz format>";
                     type = "raw";
                     device = "/dev/mmcblk0p2";
                     compressed = true;
@@ -46,7 +46,7 @@ software =
         {
             images: (
                 {
-                    filename = "elk-sika-image-dev-raspberrypi3.ext4.gz";
+                    filename = "<name of the compressed rootfs in ext4.gz format>";
                     type = "raw";
                     device = "/dev/mmcblk0p3";
                     compressed = true;
