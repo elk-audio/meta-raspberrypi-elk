@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = " \
     file://${WORKDIR}/git/spi-bcm283x-rtdm/LICENSE;md5=2c1c00f9d3ed9e24fa69b932b7e7aff2 \
     "
 
-SRC_URI = "gitsm://git@bitbucket.org/mindswteam/rpi_shiftreg_rtdm_driver.git;protocol=ssh;nobranch=1"
+SRC_URI = "gitsm://github.com/elk-audio/rpi-shiftreg-rtdm-driver.git;protocol=https;nobranch=1"
 SRCREV = "7b39b84178135e06716a8d9c4bf0f73de3c772d0"
 
 S = "${WORKDIR}/git/boards/elk_pi/"
