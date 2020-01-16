@@ -4,7 +4,7 @@ LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=4a0f8ad6a793571b331b0e19e3dd925c"
 
 SRC_URI = "git://github.com/elk-audio/rpi-rtdm-audio-driver.git;protocol=https;nobranch=1"
-SRCREV = "5fe0e2f8fab07880997d22bd081b0ef36f106e77"
+SRCREV = "b457cba0c8baedc21d4a7ea9c0b3b482c102fd7c"
 
 inherit module
 

@@ -1,61 +1,39 @@
-From 4cf3d7cdbaf93f460db278524c6339b67684d913 Mon Sep 17 00:00:00 2001
+From 10b64b37b0ad2714b0adb45e4374cbae20adc405 Mon Sep 17 00:00:00 2001
 From: kknitin <nitin.kulkarni@mindmusiclabs.com>
 Date: Tue, 1 Oct 2019 13:54:37 +0200
-Subject: [PATCH 2/2] fix for RT safe dma
+Subject: [PATCH] fix for RT safe dma
 
 ---
- drivers/dma/Kconfig           |   6 ++
- drivers/dma/bcm2835-dma.c     | 126 ++++++++++++++++++++++++++++++----
- drivers/dma/virt-dma.c        |  17 ++---
+ drivers/dma/bcm2835-dma.c     | 130 +++++++++++++++++++++++++++++-----
+ drivers/dma/virt-dma.c        |  15 ++--
  drivers/dma/virt-dma.h        |  16 +++--
- drivers/irqchip/irq-bcm2835.c |  15 +++-
- 5 files changed, 150 insertions(+), 30 deletions(-)
+ drivers/irqchip/irq-bcm2835.c |  18 ++++-
+ 4 files changed, 145 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 845fb2ff22a2..b7e33d3738c1 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -135,6 +135,12 @@ config DMA_BCM2835
- 	select DMA_ENGINE
- 	select DMA_VIRTUAL_CHANNELS
- 
-+config BCM_RTDM_IRQ_TX
-+	int "IRQ number of the RT DMA tx channel"
-+
-+config BCM_RTDM_IRQ_RX
-+	int "IRQ number of the RT DMA rx channel"
-+
- config DMA_JZ4740
- 	tristate "JZ4740 DMA support"
- 	depends on MACH_JZ4740 || COMPILE_TEST
 diff --git a/drivers/dma/bcm2835-dma.c b/drivers/dma/bcm2835-dma.c
-index babfed97b22c..d8ed5d15b2c7 100644
+index 599c218dc8a7..de74368314d2 100644
 --- a/drivers/dma/bcm2835-dma.c
 +++ b/drivers/dma/bcm2835-dma.c
-@@ -44,6 +44,9 @@
+@@ -44,6 +44,7 @@
  #include <linux/spinlock.h>
  #include <linux/of.h>
  #include <linux/of_dma.h>
 +#include <rtdm/driver.h>
-+#include <linux/delay.h>
-+#include <asm/barrier.h>
  
  #include "virt-dma.h"
  
-@@ -181,6 +184,12 @@ struct bcm2835_desc {
+@@ -181,6 +182,10 @@ struct bcm2835_desc {
  #define MAX_DMA_LEN SZ_1G
  #define MAX_LITE_DMA_LEN (SZ_64K - 4)
  
-+
-+/***********************************************************************/
++/* RTDM interrupt objects */
 +static rtdm_irq_t  dma_rtdm_tx_irq;
 +static rtdm_irq_t  dma_rtdm_rx_irq;
-+/***********************************************************************/
 +
  static inline size_t bcm2835_dma_max_frame_length(struct bcm2835_chan *c)
  {
  	/* lite and normal channels have different max frame length */
-@@ -367,8 +376,9 @@ static struct bcm2835_desc *bcm2835_dma_create_cb_chain(
+@@ -367,8 +372,9 @@ static struct bcm2835_desc *bcm2835_dma_create_cb_chain(
  			d->cb_list[frame - 1].cb->next = cb_entry->paddr;
  
  		/* update src and dst and length */
@@ -66,7 +44,7 @@ index babfed97b22c..d8ed5d15b2c7 100644
  		if (dst && (info & BCM2835_DMA_D_INC))
  			dst += control_block->length;
  
-@@ -464,6 +474,60 @@ static void bcm2835_dma_start_desc(struct bcm2835_chan *c)
+@@ -470,6 +476,56 @@ static void bcm2835_dma_start_desc(struct bcm2835_chan *c)
  	writel(BCM2835_DMA_ACTIVE, c->chan_base + BCM2835_DMA_CS);
  }
  
@@ -98,8 +76,6 @@ index babfed97b22c..d8ed5d15b2c7 100644
 +	struct bcm2835_desc *d;
 +	unsigned long flags;
 +
-+	//raw_spin_lock_irqsave(&c->vc.lock, flags);
-+
 +	/* Acknowledge interrupt */
 +	writel(BCM2835_DMA_INT, c->chan_base + BCM2835_DMA_CS);
 +
@@ -119,24 +95,22 @@ index babfed97b22c..d8ed5d15b2c7 100644
 +		}
 +	}
 +
-+	//raw_spin_unlock_irqrestore(&c->vc.lock, flags);
-+
 +	return RTDM_IRQ_HANDLED;
 +}
 +
  static irqreturn_t bcm2835_dma_callback(int irq, void *data)
  {
  	struct bcm2835_chan *c = data;
-@@ -479,7 +543,7 @@ static irqreturn_t bcm2835_dma_callback(int irq, void *data)
+@@ -485,7 +541,7 @@ static irqreturn_t bcm2835_dma_callback(int irq, void *data)
  			return IRQ_NONE;
  	}
  
 -	spin_lock_irqsave(&c->vc.lock, flags);
 +	raw_spin_lock_irqsave(&c->vc.lock, flags);
  
- 	/*
- 	 * Clear the INT flag to receive further interrupts. Keep the channel
-@@ -503,7 +567,7 @@ static irqreturn_t bcm2835_dma_callback(int irq, void *data)
+ 	/* Acknowledge interrupt */
+ 	writel(BCM2835_DMA_INT, c->chan_base + BCM2835_DMA_CS);
+@@ -506,7 +562,7 @@ static irqreturn_t bcm2835_dma_callback(int irq, void *data)
  		}
  	}
  
@@ -145,66 +119,63 @@ index babfed97b22c..d8ed5d15b2c7 100644
  
  	return IRQ_HANDLED;
  }
-@@ -512,6 +576,8 @@ static int bcm2835_dma_alloc_chan_resources(struct dma_chan *chan)
- {
- 	struct bcm2835_chan *c = to_bcm2835_dma_chan(chan);
- 	struct device *dev = c->vc.chan.device->dev;
-+	static rtdm_irq_t *rtdm_irq_handle;
-+	int ret;
- 
- 	dev_dbg(dev, "Allocating DMA channel %d\n", c->ch);
- 
-@@ -522,6 +588,22 @@ static int bcm2835_dma_alloc_chan_resources(struct dma_chan *chan)
- 		return -ENOMEM;
- 	}
- 
-+	if (c->irq_number == CONFIG_BCM_RTDM_IRQ_TX ||
-+				c->irq_number == CONFIG_BCM_RTDM_IRQ_RX) {
-+
-+		if (c->irq_number == CONFIG_BCM_RTDM_IRQ_TX)
-+			rtdm_irq_handle = &dma_rtdm_tx_irq;
-+		else
-+			rtdm_irq_handle = &dma_rtdm_rx_irq;
-+
-+		ret = rtdm_irq_request(rtdm_irq_handle, c->irq_number,
-+					bcm2835_dma_rtcallback,
-+			       		0, "DMA TX IRQ", c);
-+		if (ret) {
-+			printk("rt irq request failed !\n");
-+		}
-+		return ret;
-+	}
- 	return request_irq(c->irq_number, bcm2835_dma_callback,
+@@ -529,15 +585,52 @@ static int bcm2835_dma_alloc_chan_resources(struct dma_chan *chan)
  			   c->irq_flags, "DMA IRQ", c);
  }
-@@ -529,12 +611,26 @@ static int bcm2835_dma_alloc_chan_resources(struct dma_chan *chan)
+ 
++/* This handler was not present for bcm2835-dma and most certainly no one calls
++it. Hence, it's safe to use this to enter dma backend to get the rtdm irqs */
++static int bcm2835_dma_resume(struct dma_chan *chan)
++{
++	static rtdm_irq_t *rtdm_irq_handle;
++	struct bcm2835_chan *c = to_bcm2835_dma_chan(chan);
++	int ret = 0;
++
++	if (chan->private) {
++		if (!strcmp(chan->private, "rtdm-tx-irq")) {
++			rtdm_irq_handle = &dma_rtdm_tx_irq;
++		} else if (!strcmp(chan->private, "rtdm-rx-irq")) {
++			rtdm_irq_handle = &dma_rtdm_rx_irq;
++		} else {
++			return ret;
++		}
++		free_irq(c->irq_number, c);
++		ret = rtdm_irq_request(rtdm_irq_handle, c->irq_number,
++					bcm2835_dma_rtcallback,
++					0, "RT DMA IRQ", c);
++		if (ret) {
++			printk(KERN_ERR "bcm2835-dma: RT IRQ request failed\n");
++		}
++	}
++	return ret;
++}
++
  static void bcm2835_dma_free_chan_resources(struct dma_chan *chan)
  {
  	struct bcm2835_chan *c = to_bcm2835_dma_chan(chan);
-+	static rtdm_irq_t *rtdm_irq_handle;
  
  	vchan_free_chan_resources(&c->vc);
-+
-+	if (c->irq_number == CONFIG_BCM_RTDM_IRQ_TX ||
-+				c->irq_number == CONFIG_BCM_RTDM_IRQ_RX) {
-+
-+		if (c->irq_number == CONFIG_BCM_RTDM_IRQ_TX)
-+			rtdm_irq_handle = &dma_rtdm_tx_irq;
-+		else
-+			rtdm_irq_handle = &dma_rtdm_rx_irq;
-+		rtdm_irq_free(rtdm_irq_handle);
-+		dma_pool_destroy(c->cb_pool);
-+		printk("rt irq freed !\n");
-+	} else {
- 	free_irq(c->irq_number, c);
- 	dma_pool_destroy(c->cb_pool);
+-	free_irq(c->irq_number, c);
+-	dma_pool_destroy(c->cb_pool);
  
- 	dev_dbg(c->vc.chan.device->dev, "Freeing DMA channel %u\n", c->ch);
+-	dev_dbg(c->vc.chan.device->dev, "Freeing DMA channel %u\n", c->ch);
++	if (chan->private) {
++		if (!strcmp(chan->private, "rtdm-tx-irq")) {
++			rtdm_irq_free(&dma_rtdm_tx_irq);
++			goto exit;
++		} else if (!strcmp(chan->private, "rtdm-rx-irq")) {
++			rtdm_irq_free(&dma_rtdm_rx_irq);
++			goto exit;
++		}
 +	}
++
++	free_irq(c->irq_number, c);
++exit:	dma_pool_destroy(c->cb_pool);
++	dev_dbg(c->vc.chan.device->dev, "Freeing DMA channel %u\n",c->ch);
  }
  
  static size_t bcm2835_dma_desc_size(struct bcm2835_desc *d)
-@@ -578,7 +674,7 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
+@@ -581,7 +674,7 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
  	if (ret == DMA_COMPLETE || !txstate)
  		return ret;
  
@@ -213,7 +184,7 @@ index babfed97b22c..d8ed5d15b2c7 100644
  	vd = vchan_find_desc(&c->vc, cookie);
  	if (vd) {
  		txstate->residue =
-@@ -587,10 +683,12 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
+@@ -590,10 +683,12 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
  		struct bcm2835_desc *d = c->desc;
  		dma_addr_t pos;
  
@@ -228,7 +199,7 @@ index babfed97b22c..d8ed5d15b2c7 100644
  		else
  			pos = 0;
  
-@@ -599,7 +697,7 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
+@@ -602,7 +697,7 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
  		txstate->residue = 0;
  	}
  
@@ -237,7 +208,7 @@ index babfed97b22c..d8ed5d15b2c7 100644
  
  	return ret;
  }
-@@ -609,11 +707,11 @@ static void bcm2835_dma_issue_pending(struct dma_chan *chan)
+@@ -612,11 +707,11 @@ static void bcm2835_dma_issue_pending(struct dma_chan *chan)
  	struct bcm2835_chan *c = to_bcm2835_dma_chan(chan);
  	unsigned long flags;
  
@@ -251,8 +222,8 @@ index babfed97b22c..d8ed5d15b2c7 100644
  }
  
  static struct dma_async_tx_descriptor *bcm2835_dma_prep_dma_memcpy(
-@@ -797,12 +895,12 @@ static int bcm2835_dma_terminate_all(struct dma_chan *chan)
- 	unsigned long flags;
+@@ -801,12 +896,12 @@ static int bcm2835_dma_terminate_all(struct dma_chan *chan)
+ 	int timeout = 10000;
  	LIST_HEAD(head);
  
 -	spin_lock_irqsave(&c->vc.lock, flags);
@@ -265,9 +236,9 @@ index babfed97b22c..d8ed5d15b2c7 100644
 -	spin_unlock(&d->lock);
 +	raw_spin_unlock(&d->lock);
  
- 	/* stop DMA activity */
- 	if (c->desc) {
-@@ -812,7 +910,7 @@ static int bcm2835_dma_terminate_all(struct dma_chan *chan)
+ 	/*
+ 	 * Stop DMA activity: we assume the callback will not be called
+@@ -832,7 +927,7 @@ static int bcm2835_dma_terminate_all(struct dma_chan *chan)
  	}
  
  	vchan_get_all_descriptors(&c->vc, &head);
@@ -276,7 +247,15 @@ index babfed97b22c..d8ed5d15b2c7 100644
  	vchan_dma_desc_free_list(&c->vc, &head);
  
  	return 0;
-@@ -934,7 +1032,7 @@ static int bcm2835_dma_probe(struct platform_device *pdev)
+@@ -938,6 +1033,7 @@ static int bcm2835_dma_probe(struct platform_device *pdev)
+ 	dma_cap_set(DMA_CYCLIC, od->ddev.cap_mask);
+ 	dma_cap_set(DMA_SLAVE, od->ddev.cap_mask);
+ 	dma_cap_set(DMA_MEMCPY, od->ddev.cap_mask);
++	od->ddev.device_resume = bcm2835_dma_resume;
+ 	od->ddev.device_alloc_chan_resources = bcm2835_dma_alloc_chan_resources;
+ 	od->ddev.device_free_chan_resources = bcm2835_dma_free_chan_resources;
+ 	od->ddev.device_tx_status = bcm2835_dma_tx_status;
+@@ -954,7 +1050,7 @@ static int bcm2835_dma_probe(struct platform_device *pdev)
  	od->ddev.residue_granularity = DMA_RESIDUE_GRANULARITY_BURST;
  	od->ddev.dev = &pdev->dev;
  	INIT_LIST_HEAD(&od->ddev.channels);
@@ -286,7 +265,7 @@ index babfed97b22c..d8ed5d15b2c7 100644
  	platform_set_drvdata(pdev, od);
  
 diff --git a/drivers/dma/virt-dma.c b/drivers/dma/virt-dma.c
-index 545e97279083..009802e3087f 100644
+index 545e97279083..ad0bd1adf4dc 100644
 --- a/drivers/dma/virt-dma.c
 +++ b/drivers/dma/virt-dma.c
 @@ -26,11 +26,11 @@ dma_cookie_t vchan_tx_submit(struct dma_async_tx_descriptor *tx)
@@ -315,7 +294,7 @@ index 545e97279083..009802e3087f 100644
  
  	dev_dbg(vc->chan.device->dev, "vchan %p: txd %p[%x]: freeing\n",
  		vc, vd, vd->tx.cookie);
-@@ -83,14 +83,14 @@ EXPORT_SYMBOL_GPL(vchan_find_desc);
+@@ -83,14 +83,13 @@ EXPORT_SYMBOL_GPL(vchan_find_desc);
   * This tasklet handles the completion of a DMA descriptor by
   * calling its callback and freeing it.
   */
@@ -328,20 +307,18 @@ index 545e97279083..009802e3087f 100644
  	LIST_HEAD(head);
  
 -	spin_lock_irq(&vc->lock);
-+	//raw_spin_lock_irq(&vc->lock);
  	list_splice_tail_init(&vc->desc_completed, &head);
  	vd = vc->cyclic;
  	if (vd) {
-@@ -99,7 +99,7 @@ static void vchan_complete(unsigned long arg)
+@@ -99,7 +98,6 @@ static void vchan_complete(unsigned long arg)
  	} else {
  		memset(&cb, 0, sizeof(cb));
  	}
 -	spin_unlock_irq(&vc->lock);
-+	//raw_spin_unlock_irq(&vc->lock);
  
  	dmaengine_desc_callback_invoke(&cb, NULL);
  
-@@ -115,6 +115,7 @@ static void vchan_complete(unsigned long arg)
+@@ -115,6 +113,7 @@ static void vchan_complete(unsigned long arg)
  		dmaengine_desc_callback_invoke(&cb, NULL);
  	}
  }
@@ -349,7 +326,7 @@ index 545e97279083..009802e3087f 100644
  
  void vchan_dma_desc_free_list(struct virt_dma_chan *vc, struct list_head *head)
  {
-@@ -136,7 +137,7 @@ void vchan_init(struct virt_dma_chan *vc, struct dma_device *dmadev)
+@@ -136,7 +135,7 @@ void vchan_init(struct virt_dma_chan *vc, struct dma_device *dmadev)
  {
  	dma_cookie_init(&vc->chan);
  
@@ -411,7 +388,7 @@ index 3f776a46a29c..a3e18f91e88f 100644
  	vchan_dma_desc_free_list(vc, &head);
  }
 diff --git a/drivers/irqchip/irq-bcm2835.c b/drivers/irqchip/irq-bcm2835.c
-index ec07012a2a2a..34212161542e 100644
+index 74bab3af73f6..d2fe6fe90d4e 100644
 --- a/drivers/irqchip/irq-bcm2835.c
 +++ b/drivers/irqchip/irq-bcm2835.c
 @@ -50,6 +50,7 @@
@@ -422,24 +399,26 @@ index ec07012a2a2a..34212161542e 100644
  
  #include <asm/exception.h>
  #ifndef CONFIG_ARM64
-@@ -341,9 +342,19 @@ static void __exception_irq_entry bcm2835_handle_irq(
+@@ -341,9 +342,20 @@ static void __exception_irq_entry bcm2835_handle_irq(
  static void bcm2836_chained_handle_irq(struct irq_desc *desc)
  {
  	u32 hwirq;
 -
 -	while ((hwirq = get_next_armctrl_hwirq()) != ~0)
+-		ipipe_handle_demuxed_irq(irq_linear_revmap(intc.domain, hwirq));
 +	int irq;
++	unsigned long control;
++	struct ipipe_domain *ipd = ipipe_head_domain;
 +
 +	while ((hwirq = get_next_armctrl_hwirq()) != ~0) {
 +		irq = irq_linear_revmap(intc.domain, hwirq);
-+		if(irq == CONFIG_BCM_RTDM_IRQ_TX || irq ==
-+		CONFIG_BCM_RTDM_IRQ_RX ) {
-+			ipipe_trace_irq_entry(irq);
++		control = ipd->irqs[irq].control;
++		if (control & IPIPE_HANDLE_MASK) {
 +			__ipipe_dispatch_irq(irq, IPIPE_IRQF_NOACK);
-+			ipipe_trace_irq_exit(irq);;
-+			continue;
++		} else {
++			ipipe_handle_demuxed_irq(irq_linear_revmap(intc.domain,
++							hwirq));
 +		}
- 		ipipe_handle_demuxed_irq(irq_linear_revmap(intc.domain, hwirq));
 +	}
  }
  
