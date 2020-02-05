@@ -1,20 +1,18 @@
 DESCRIPTION = "Append recipe to use xenomai- enabled kernel for 64 bit version of Elk, but this is not used/supported currently"
-LINUX_VERSION = "4.14.78"
+LINUX_VERSION = "4.19.57"
 PV = "${LINUX_VERSION}"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 #unset config vars since we have a custom defconfig
 KCONFIG_MODE = "--allnoconfig"
-KBUILD_DEFCONFIG_raspberrypi3-64 = ""
 
-# rpi-4.14-78
-SRCREV = "af3ff2aed7d3d8991296d882febff75418ab6f83"
+SRCREV = "6e787b87ace9f945f17a9022288e2758ed281cf7"
+
 SRC_URI += " \
-    file://0001-Rpi-ipipe-patch-for-4.14.78.patch \
-    file://0001-rt-safe-dma-operation.patch \
-    file://0003-disable-hdmi-audio.patch \
-    file://0004-fix-for-lan7xx.patch \
+    file://0001-Ipipe-patch-for-4.19.55.patch \
+    file://0002-RT-DMA-fix.patch \
+    file://0003-PCIe-irq-chip-ipipe-safe.patch \
     file://defconfig \
 "
 
