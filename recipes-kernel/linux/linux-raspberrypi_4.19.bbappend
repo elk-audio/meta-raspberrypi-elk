@@ -16,6 +16,10 @@ SRC_URI += " \
     file://defconfig \
 "
 
+do_configure_append() {
+    cp ${WORKDIR}/defconfig ${B}/.config
+}
+
 do_prepare_kernel () {
     linux_src="${S}"
     xenomai_src="${WORKDIR}/xenomai-next"
