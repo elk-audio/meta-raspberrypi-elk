@@ -101,4 +101,4 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # export LV2 plugin paths
-export LV2_PATH=/usr/bin/lv2:~/plugins/mda-lv2/:/udata/plugins/lv2
+export LV2_PATH=/home/mind/plugins/mda-lv2/:/udata/plugins/lv2:/usr/lib/lv2
