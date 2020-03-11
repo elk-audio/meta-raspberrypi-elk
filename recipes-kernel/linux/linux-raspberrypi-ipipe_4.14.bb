@@ -1,7 +1,7 @@
 SUMMARY = "This is the Xenomai enabled kernel running in the Elk Audio OS"
 DESCRIPTION = "This recipe is taken from https://github.com/s-vincent/meta-raspberrypi-rt-sv.git"
 HOMEPAGE = "https://github.com/elk-audio/meta-raspberrypi-elk"
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-${PV}:"
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
 LINUX_VERSION = "4.14.85"
 
