@@ -11,5 +11,8 @@ do_deploy_append() {
     echo "enable_uart=1" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
     echo "dtparam=i2c_arm=on" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
     echo "dtparam=i2c_vc=on" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
+}
+
+do_deploy_append_raspberrypi4-64() {
     echo "total_mem=1024" >> ${DEPLOYDIR}/bcm2835-bootfiles/config.txt
 }
