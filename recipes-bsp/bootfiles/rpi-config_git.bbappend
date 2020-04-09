@@ -1,6 +1,3 @@
-# disable vc4-kms-v3d since we only use framebuffer
-VC4GRAPHICS = "0"
-
 do_deploy_append() {
     # disable BT for Pi3/Pi0W if any
     if [ "${DISABLE_BT}" = "1" ]; then
@@ -11,8 +8,4 @@ do_deploy_append() {
     echo "enable_uart=1" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
     echo "dtparam=i2c_arm=on" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
     echo "dtparam=i2c_vc=on" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
-}
-
-do_deploy_append_raspberrypi4-64() {
-    echo "total_mem=1024" >> ${DEPLOYDIR}/bcm2835-bootfiles/config.txt
 }

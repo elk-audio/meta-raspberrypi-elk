@@ -1,16 +1,12 @@
 DESCRIPTION = "Append recipe to use xenomai- enabled kernel for 64 bit version of Elk, but this is not used/supported currently"
-LINUX_VERSION = "4.19.57"
-PV = "${LINUX_VERSION}"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
 #unset config vars since we have a custom defconfig
 KCONFIG_MODE = "--allnoconfig"
 
-SRCREV = "6e787b87ace9f945f17a9022288e2758ed281cf7"
-
 SRC_URI += " \
-    file://0001-Ipipe-patch-for-4.19.55.patch \
+    file://0001-Ipipe-patch-for-4.19.88.patch \
     file://0002-RT-DMA-fix.patch \
     file://0003-PCIe-irq-chip-ipipe-safe.patch \
     file://defconfig \
