@@ -21,4 +21,6 @@ RDEPENDS_packagegroup-elk-raspberrypi-system-pkgs = "\
     rpi-shiftreg-rtdm-driver \
     elk-system-conf \
     userland \
+    kernel-devicetree \
+    kernel-image \
 "

@@ -1,20 +1,19 @@
-saveenv
-
 if env exists default_part;then printenv default_part; else setenv default_part 0; fi
 if env exists fallback_part;then printenv fallback_part; else setenv fallback_part 1; fi
 if env exists boot_count;then printenv boot_count; else setenv boot_count 0; fi
-if env exists kimage;then printenv kimage; else setenv kimage 'Image0'; fi
+if env exists rpi_part;then printenv rpi_part; else setenv rpi_part 0; fi
+if env exists kernel_addr_comp;then printenv kernel_addr_comp; else setenv kernel_addr_comp 0x01850000; fi
 
-#This part needs a refactoring in future to make it more readable and flexible
-
-test -n "$set_boot_args" || setenv set_boot_args ' if test "${default_part}" = "0" ;then setenv bootargs coherent_pool=1M 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000 dwc_otg.lpm_enable=0 console=ttyS0,57600 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait xenomai.allowed_group=2004; setenv kimage 'Image0'; else setenv bootargs coherent_pool=1M 8250.nr_uarts=1 cma=256M  vc_mem.mem_base=0x3ec00000 vc_mem.mem_size=0x40000000 dwc_otg.lpm_enable=0 console=ttyS0,57600 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait xenomai.allowed_group=2004; setenv kimage 'Image1'; fi'
-
-setenv check_boot_count ' if test "${boot_count}" = "10" ;then echo "Switching to fallback image"; setexpr default_part ${default_part} ^ 1; else echo "booting normally..."; fi'
+setenv check_boot_count ' if test "${boot_count}" = "9" ;then echo "Switching to fallback image"; setexpr default_part ${default_part} ^ 1; else echo "booting normally..."; fi'
 
 run check_boot_count
 setexpr boot_count ${boot_count} + 1
-fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs
-run set_boot_args
-fatload mmc 0:1 ${kernel_addr_r} ${kimage}
+setexpr rpi_part ${default_part} + 2
 saveenv
-booti ${kernel_addr_r} - ${fdt_addr}
+
+fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs
+load mmc 0:${rpi_part} ${kernel_addr_comp} /boot/@@KERNEL_IMAGETYPE@@
+unzip ${kernel_addr_comp} ${kernel_addr_r}
+setenv bootargs ${bootargs} root=/dev/mmcblk0p${rpi_part}
+@@KERNEL_BOOTCMD@@ ${kernel_addr_r} - ${fdt_addr}
+
