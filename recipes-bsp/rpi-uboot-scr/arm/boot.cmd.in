@@ -3,7 +3,7 @@ if env exists fallback_part;then printenv fallback_part; else setenv fallback_pa
 if env exists boot_count;then printenv boot_count; else setenv boot_count 0; fi
 if env exists rpi_part;then printenv rpi_part; else setenv rpi_part 0; fi
 if env exists kernel_addr_comp;then printenv kernel_addr_comp; else setenv kernel_addr_comp 0x01850000; fi
-if env exists extra_boot_args;then printenv extra_boot_args; else setenv extra_boot_args 'dwc_otg.speed=1'; fi
+if env exists dwc_otg_speed;then printenv dwc_otg_speed; else setenv dwc_otg_speed ' '; fi
 
 setenv check_boot_count ' if test "${boot_count}" = "9" ;then echo "Switching to fallback image"; setexpr default_part ${default_part} ^ 1; else echo "booting normally..."; fi'
 
@@ -14,6 +14,6 @@ saveenv
 
 fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs
 load mmc 0:${rpi_part} ${kernel_addr_r} /boot/@@KERNEL_IMAGETYPE@@
-setenv bootargs ${bootargs} root=/dev/mmcblk0p${rpi_part} ${extra_boot_args}
+setenv bootargs ${bootargs} root=/dev/mmcblk0p${rpi_part} ${dwc_otg_speed}
 @@KERNEL_BOOTCMD@@ ${kernel_addr_r} - ${fdt_addr}
 
