@@ -21,3 +21,4 @@ load mmc 0:${rootfs_part} ${kernel_addr_comp} boot/@@KERNEL_IMAGETYPE@@
 unzip ${kernel_addr_comp} ${kernel_addr_r}
 setenv bootargs "${bootargs} root=/dev/mmcblk0p${rootfs_part}"
 @@KERNEL_BOOTCMD@@ ${kernel_addr_r} - ${fdt_addr}
+env delete -f fdt_addr && saveenv && reset
