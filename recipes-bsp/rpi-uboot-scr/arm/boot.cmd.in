@@ -19,5 +19,5 @@ setenv kernel_addr_comp 0x01850000
 setexpr rootfs_part ${default_part} + 2
 printenv rootfs_part
 load mmc 0:${rootfs_part} ${kernel_addr_r} boot/@@KERNEL_IMAGETYPE@@
-setenv bootargs ${bootargs} root=/dev/mmcblk0p${rootfs_part} ${dwc_otg_speed}
+setenv bootargs "${bootargs} root=/dev/mmcblk0p${rootfs_part} ${dwc_otg_speed}"
 @@KERNEL_BOOTCMD@@ ${kernel_addr_r} - ${fdt_addr}
