@@ -5,7 +5,7 @@ ConditionPathExists=/udata/change_perms
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/change-udata-perms
+ExecStart=/usr/bin/udata-setup
 User=root
 
 [Install]

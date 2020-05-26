@@ -1,6 +1,6 @@
 [Unit]
 Description=Load the required rtdm drivers
-After=systemd-udevd.service
+After=systemd-udevd.service udata.mount
 
 [Service]
 Type=oneshot
