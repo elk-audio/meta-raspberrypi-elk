@@ -12,8 +12,8 @@ SRC_URI += " \
     file://defconfig \
 "
 
-CMDLINE_append_raspberrypi3 = " dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 xenomai.allowed_group=2004 dwc_otg.speed=1"
-CMDLINE_append_raspberrypi4-64 = " xenomai.allowed_group=2004"
+CMDLINE_append_raspberrypi3 = " dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 xenomai.allowed_group=2004 ipv6.disable=1 dwc_otg.speed=1"
+CMDLINE_append_raspberrypi4-64 = " xenomai.allowed_group=2004 ipv6.disable=1"
 
 do_configure_append() {
     cp ${WORKDIR}/defconfig ${B}/.config
