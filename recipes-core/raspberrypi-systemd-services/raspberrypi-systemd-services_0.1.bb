@@ -7,6 +7,8 @@ SRC_URI = "\
     file://load-drivers.service \
     file://rfkill-atboot.service \
     file://udata-perms.service \
+    file://udata-setup \
+    file://load-drivers \
 "
 
 S = "${WORKDIR}"
@@ -20,9 +22,12 @@ INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
 do_install () {
     install -d ${D}${systemd_system_unitdir}
+    install -d ${D}${bindir}
     install -m 0644 ${WORKDIR}/load-drivers.service ${D}${systemd_system_unitdir}/
     install -m 0644 ${WORKDIR}/rfkill-atboot.service ${D}${systemd_system_unitdir}/
     install -m 0644 ${WORKDIR}/udata-perms.service ${D}${systemd_system_unitdir}/
+    install -m 0755 ${WORKDIR}/udata-setup ${D}${bindir}
+    install -m 0755 ${WORKDIR}/load-drivers ${D}${bindir}
 }
 
 NATIVE_SYSTEMD_SUPPORT = "1"
@@ -37,3 +42,7 @@ SYSTEMD_AUTO_ENABLE = "enable"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 FILES_${PN} += "${systemd_system_unitdir}/*"
+FILES_${PN} += "${bindir}/*"
+
+RDEPENDS_${PN} = "bash"
+

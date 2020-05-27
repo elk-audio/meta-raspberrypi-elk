@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "Changing udata perms to user"
+chown -R mind:mind /udata
+rm -f /udata/change_perms
+rm -rf /udata/.elk-system/var
+mkdir -p /udata/.elk-system
+echo "Setting elk-system.conf in /udata"
+cp /etc/elk-system.conf /udata/.elk-system
+sync
