@@ -17,3 +17,15 @@ echo "Starting $DESC ..."
 echo "rootfs is mounted on $rootfs and selection is $selection"
 
 swupdate -v ${selection} -w "-r /www"
+
+cat /boot/uboot.env
+if [ $? -ne 0 ]
+then
+    umount /dev/mmcblk0p1
+    fsck -y /dev/mmcblk0p1
+    mount /dev/mmcblk0p1 /boot
+    rm /boot/uboot.env
+    umount /boot
+    poweroff
+fi
+

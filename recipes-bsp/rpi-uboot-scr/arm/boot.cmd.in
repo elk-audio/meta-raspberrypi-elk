@@ -1,21 +1,12 @@
-saveenv
-if env exists boot_count;then printenv boot_count; else setenv boot_count 0; fi
-if env exists default_part;then printenv default_part; else setenv default_part 0; fi
-if env exists fallback_part;then printenv fallback_part; else setenv fallback_part 1; fi
-if env exists dwc_otg_speed;then printenv dwc_otg_speed; else setenv dwc_otg_speed ' '; fi
-
-setexpr boot_count ${boot_count} + 1
-
-if test "${boot_count}" = "9"; then
-	echo "Switching to fallback image";
-	setexpr default_part ${default_part} ^ 1;
+if env exists default_part;then
+    printenv default_part;
 else
-	echo "booting normally...";
+    setenv default_part 0;
+    setenv fallback_part 1;
+    saveenv;
 fi
-saveenv
 
 fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs
-setenv kernel_addr_comp 0x01850000
 setexpr rootfs_part ${default_part} + 2
 printenv rootfs_part
 load mmc 0:${rootfs_part} ${kernel_addr_r} boot/@@KERNEL_IMAGETYPE@@
