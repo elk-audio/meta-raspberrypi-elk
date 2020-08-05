@@ -1,0 +1,156 @@
+From 98212486d639e853ed2dcf1c014cb350b5938419 Mon Sep 17 00:00:00 2001
+From: kknitin <nitin@elk.audio>
+Date: Thu, 23 Jul 2020 23:51:03 +0000
+Subject: [PATCH 1/2] Fix for RT safe dma prepare sg
+
+---
+ drivers/dma/bcm2835-dma.c | 62 +++++++++++++++++++++++++++++++++------
+ 1 file changed, 53 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/dma/bcm2835-dma.c b/drivers/dma/bcm2835-dma.c
+index de6288447890..103f9ae2573c 100644
+--- a/drivers/dma/bcm2835-dma.c
++++ b/drivers/dma/bcm2835-dma.c
+@@ -45,6 +45,7 @@
+ #include <linux/of.h>
+ #include <linux/of_dma.h>
+ #include <rtdm/driver.h>
++#include <linux/ipipe_domain.h>
+ 
+ #include "virt-dma.h"
+ 
+@@ -312,6 +313,8 @@ static const struct bcm2835_dma_cfg_data bcm2838_dma_cfg = {
+ /* RTDM interrupt objects */
+ static rtdm_irq_t  dma_rtdm_tx_irq;
+ static rtdm_irq_t  dma_rtdm_rx_irq;
++static struct bcm2835_desc *rt_tx_desc = NULL;
++static struct bcm2835_desc *rt_rx_desc = NULL;
+ 
+ static inline size_t bcm2835_dma_max_frame_length(struct bcm2835_chan *c)
+ {
+@@ -487,15 +490,24 @@ static struct bcm2835_desc *bcm2835_dma_create_cb_chain(
+ 	if (!frames)
+ 		return NULL;
+ 
++	if (ipipe_current_domain == ipipe_head_domain) {
++		if (direction == DMA_DEV_TO_MEM)
++			d = rt_rx_desc;
++		else
++			d = rt_tx_desc;
++	} else {
+ 	/* allocate and setup the descriptor. */
+-	d = kzalloc(sizeof(*d) + frames * sizeof(struct bcm2835_cb_entry),
++		d = kzalloc(sizeof(*d) + frames * sizeof(struct 
++		bcm2835_cb_entry),
+ 		    gfp);
+-	if (!d)
+-		return NULL;
++		if (!d)
++			return NULL;
++	}
+ 
+ 	d->c = c;
+ 	d->dir = direction;
+ 	d->cyclic = cyclic;
++	d->frames = 0;
+ 
+ 	/*
+ 	 * Iterate over all frames, create a control block
+@@ -503,10 +515,12 @@ static struct bcm2835_desc *bcm2835_dma_create_cb_chain(
+ 	 */
+ 	for (frame = 0, total_len = 0; frame < frames; d->frames++, frame++) {
+ 		cb_entry = &d->cb_list[frame];
+-		cb_entry->cb = dma_pool_alloc(c->cb_pool, gfp,
++		if (ipipe_current_domain != ipipe_head_domain) {
++			cb_entry->cb = dma_pool_alloc(c->cb_pool, gfp,
+ 					      &cb_entry->paddr);
+-		if (!cb_entry->cb)
+-			goto error_cb;
++			if (!cb_entry->cb)
++				goto error_cb;
++		}
+ 
+ 		/* fill in the control block */
+ 		control_block = cb_entry->cb;
+@@ -543,6 +557,7 @@ static struct bcm2835_desc *bcm2835_dma_create_cb_chain(
+ 		if (frame && c->is_40bit_channel)
+ 			d->cb_list[frame - 1].cb->next =
+ 				to_bcm2838_cbaddr(cb_entry->paddr);
++
+ 		if (frame && !c->is_40bit_channel)
+ 			d->cb_list[frame - 1].cb->next = cb_entry->paddr;
+ 
+@@ -561,7 +576,6 @@ static struct bcm2835_desc *bcm2835_dma_create_cb_chain(
+ 	if (c->is_40bit_channel) {
+ 		struct bcm2838_dma40_scb *scb =
+ 			(struct bcm2838_dma40_scb *)d->cb_list[d->frames-1].cb;
+-
+ 		scb->ti |= to_bcm2838_ti(finalextrainfo);
+ 	} else {
+ 		d->cb_list[d->frames - 1].cb->info |= finalextrainfo;
+@@ -711,7 +725,11 @@ static int bcm2835_dma_rtcallback(rtdm_irq_t *irqh)
+ 	unsigned long flags;
+ 
+ 	/* Acknowledge interrupt */
+-	writel(BCM2835_DMA_INT, c->chan_base + BCM2835_DMA_CS);
++
++	writel(BCM2835_DMA_INT | BCM2835_DMA_ACTIVE |
++		(c->is_40bit_channel ? BCM2838_DMA40_CS_FLAGS(c->dreq) :
++		BCM2835_DMA_CS_FLAGS(c->dreq)),
++		c->chan_base + BCM2835_DMA_CS);
+ 
+ 	d = c->desc;
+ 
+@@ -724,7 +742,7 @@ static int bcm2835_dma_rtcallback(rtdm_irq_t *irqh)
+ 			writel(BCM2835_DMA_ACTIVE,
+ 			       c->chan_base + BCM2835_DMA_CS);
+ 		} else {
+-			bcm2835_chan_complete(&c->desc->vd);
++			bcm2835_chan_complete(&d->vd);
+ 			bcm2835_dma_start_desc(c);
+ 		}
+ 	}
+@@ -800,14 +818,40 @@ static int bcm2835_dma_alloc_chan_resources(struct dma_chan *chan)
+ it. Hence, it's safe to use this to enter dma backend to get the rtdm irqs */
+ static int bcm2835_dma_resume(struct dma_chan *chan)
+ {
++	struct bcm2835_desc *d;
++	struct bcm2835_cb_entry *cb_entry;
+ 	static rtdm_irq_t *rtdm_irq_handle;
+ 	struct bcm2835_chan *c = to_bcm2835_dma_chan(chan);
+ 	int ret = 0;
+ 
+ 	if (chan->private) {
+ 		if (!strcmp(chan->private, "rtdm-tx-irq")) {
++			d = kzalloc(sizeof(*d) +
++			 sizeof(struct bcm2835_cb_entry), GFP_KERNEL);
++			if (!d)
++				return NULL;
++			cb_entry = &d->cb_list[0];
++			cb_entry->cb = dma_pool_alloc(c->cb_pool, GFP_KERNEL,
++					      &cb_entry->paddr);
++			if (!cb_entry->cb) {
++				printk("dma_pool_alloc failed\n");
++				return -1;
++			}
++			rt_tx_desc = d;
+ 			rtdm_irq_handle = &dma_rtdm_tx_irq;
+ 		} else if (!strcmp(chan->private, "rtdm-rx-irq")) {
++			d = kzalloc(sizeof(*d) +
++			sizeof(struct bcm2835_cb_entry), GFP_KERNEL);
++			if (!d)
++				return NULL;
++			cb_entry = &d->cb_list[0];
++			cb_entry->cb = dma_pool_alloc(c->cb_pool, GFP_KERNEL,
++					&cb_entry->paddr);
++			if (!cb_entry->cb) {
++				printk("dma_pool_alloc failed\n");
++				return -1;
++			}
++			rt_rx_desc = d;
+ 			rtdm_irq_handle = &dma_rtdm_rx_irq;
+ 		} else {
+ 			return ret;
+-- 
+2.17.1
+

@@ -1,0 +1,184 @@
+From d078212b010cfd554e7d6fb09f8554b5f84a1559 Mon Sep 17 00:00:00 2001
+From: kknitin <nitin@elk.audio>
+Date: Thu, 23 Jul 2020 23:54:00 +0000
+Subject: [PATCH] Patch for rt safe spi_bcm2835. DT is modified to enable spi0
+ by default.
+
+---
+ arch/arm/boot/dts/bcm2711-rpi-4-b.dts |  9 ++---
+ drivers/spi/spi-bcm2835.c             | 49 ++++++++++++++++++++++++---
+ drivers/spi/spi.c                     |  3 +-
+ include/linux/spi/spi.h               |  1 +
+ 4 files changed, 53 insertions(+), 9 deletions(-)
+
+diff --git a/arch/arm/boot/dts/bcm2711-rpi-4-b.dts b/arch/arm/boot/dts/bcm2711-rpi-4-b.dts
+index a967a7b86f2c..692432b23d8e 100644
+--- a/arch/arm/boot/dts/bcm2711-rpi-4-b.dts
++++ b/arch/arm/boot/dts/bcm2711-rpi-4-b.dts
+@@ -84,10 +84,11 @@
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&spi0_pins &spi0_cs_pins>;
+ 	cs-gpios = <&gpio 8 1>, <&gpio 7 1>;
++	status = "okay";
+ 
+-	spidev0: spidev@0{
++	/* spidev0: spidev@0{
+ 		compatible = "spidev";
+-		reg = <0>;	/* CE0 */
++		reg = <0>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 		spi-max-frequency = <125000000>;
+@@ -95,11 +96,11 @@
+ 
+ 	spidev1: spidev@1{
+ 		compatible = "spidev";
+-		reg = <1>;	/* CE1 */
++		reg = <1>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 		spi-max-frequency = <125000000>;
+-	};
++	}; */
+ };
+ 
+ // =============================================
+diff --git a/drivers/spi/spi-bcm2835.c b/drivers/spi/spi-bcm2835.c
+index 7b3eaccf2aaa..b04a827f6628 100644
+--- a/drivers/spi/spi-bcm2835.c
++++ b/drivers/spi/spi-bcm2835.c
+@@ -37,6 +37,7 @@
+ #include <linux/of_gpio.h>
+ #include <linux/of_irq.h>
+ #include <linux/spi/spi.h>
++#include <linux/ipipe_domain.h>
+ 
+ /* SPI register offsets */
+ #define BCM2835_SPI_CS			0x00
+@@ -227,6 +228,7 @@ static void bcm2835_spi_dma_done(void *data)
+ {
+ 	struct spi_master *master = data;
+ 	struct bcm2835_spi *bs = spi_master_get_devdata(master);
++	struct spi_message *msg = master->cur_msg;
+ 
+ 	/* reset fifo and HW */
+ 	bcm2835_spi_reset_hw(master);
+@@ -240,8 +242,14 @@ static void bcm2835_spi_dma_done(void *data)
+ 		dmaengine_terminate_all(master->dma_tx);
+ 	}
+ 
+-	/* and mark as completed */;
+-	complete(&master->xfer_completion);
++	if (ipipe_current_domain == ipipe_head_domain) {
++		spi_set_cs(msg->spi, false);
++		if (msg->complete)
++			msg->complete(msg->context);
++	} else {
++		/* and mark as completed */
++		complete(&master->xfer_completion);
++	}
+ }
+ 
+ static int bcm2835_spi_prepare_sg(struct spi_master *master,
+@@ -262,7 +270,10 @@ static int bcm2835_spi_prepare_sg(struct spi_master *master,
+ 		chan  = master->dma_tx;
+ 		nents = tfr->tx_sg.nents;
+ 		sgl   = tfr->tx_sg.sgl;
+-		flags = 0 /* no  tx interrupt */;
++		flags = 0;
++		if (ipipe_current_domain == ipipe_head_domain) {
++			flags |= DMA_CTRL_REUSE;
++		}
+ 
+ 	} else {
+ 		dir   = DMA_DEV_TO_MEM;
+@@ -270,8 +281,11 @@ static int bcm2835_spi_prepare_sg(struct spi_master *master,
+ 		nents = tfr->rx_sg.nents;
+ 		sgl   = tfr->rx_sg.sgl;
+ 		flags = DMA_PREP_INTERRUPT;
++		if (ipipe_current_domain == ipipe_head_domain) {
++			flags |= DMA_CTRL_REUSE;
++		}
+ 	}
+-	/* prepare the channel */
++
+ 	desc = dmaengine_prep_slave_sg(chan, sgl, nents, dir, flags);
+ 	if (!desc)
+ 		return -EINVAL;
+@@ -596,6 +610,32 @@ static int bcm2835_spi_transfer_one(struct spi_master *master,
+ 	return bcm2835_spi_transfer_one_irq(master, spi, tfr, cs);
+ }
+ 
++static int bcm2835_spi_transfer_one_message(struct spi_master *ctlr,
++				    struct spi_message *msg)
++{
++	struct spi_transfer *xfer;
++	int ret = 0;
++
++	spi_set_cs(msg->spi, true);
++
++	list_for_each_entry(xfer, &msg->transfers, transfer_list) {
++
++		if (xfer->tx_buf || xfer->rx_buf) {
++
++			ret = bcm2835_spi_transfer_one(ctlr, msg->spi, xfer);
++			if (ret < 0) {
++				printk("bcm2835_spi_transfer_one failed\n");
++				return -EINVAL;
++			}
++		} else {
++			if (xfer->len)
++				printk("bcm2835_spi_transfer_one_message: no buffers\n");
++		}
++	}
++
++	return ret;
++}
++
+ static int bcm2835_spi_prepare_message(struct spi_master *master,
+ 				       struct spi_message *msg)
+ {
+@@ -725,6 +765,7 @@ static int bcm2835_spi_probe(struct platform_device *pdev)
+ 	master->setup = bcm2835_spi_setup;
+ 	master->set_cs = bcm2835_spi_set_cs;
+ 	master->transfer_one = bcm2835_spi_transfer_one;
++	master->transfer_one_message = bcm2835_spi_transfer_one_message;
+ 	master->handle_err = bcm2835_spi_handle_err;
+ 	master->prepare_message = bcm2835_spi_prepare_message;
+ 	master->dev.of_node = pdev->dev.of_node;
+diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
+index cf1bc7a5876b..d22fa710cd2d 100644
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -727,7 +727,7 @@ int spi_register_board_info(struct spi_board_info const *info, unsigned n)
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+-static void spi_set_cs(struct spi_device *spi, bool enable)
++void spi_set_cs(struct spi_device *spi, bool enable)
+ {
+ 	if (spi->mode & SPI_CS_HIGH)
+ 		enable = !enable;
+@@ -744,6 +744,7 @@ static void spi_set_cs(struct spi_device *spi, bool enable)
+ 		spi->controller->set_cs(spi, !enable);
+ 	}
+ }
++EXPORT_SYMBOL_GPL(spi_set_cs);
+ 
+ #ifdef CONFIG_HAS_DMA
+ int spi_map_buf(struct spi_controller *ctlr, struct device *dev,
+diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
+index a64235e05321..b76dbd58ce1c 100644
+--- a/include/linux/spi/spi.h
++++ b/include/linux/spi/spi.h
+@@ -939,6 +939,7 @@ extern int spi_async(struct spi_device *spi, struct spi_message *message);
+ extern int spi_async_locked(struct spi_device *spi,
+ 			    struct spi_message *message);
+ extern int spi_slave_abort(struct spi_device *spi);
++extern void spi_set_cs(struct spi_device *spi, bool enable);
+ 
+ static inline size_t
+ spi_max_message_size(struct spi_device *spi)
+-- 
+2.17.1
+
