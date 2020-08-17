@@ -1,11 +1,13 @@
+setenv fdt_addr_tmp ${fdt_addr}
 if env exists default_part;then
     printenv default_part;
 else
     setenv default_part 0;
     setenv fallback_part 1;
-    saveenv;
+    env delete -f fdt_addr && saveenv
 fi
 
+setenv fdt_addr ${fdt_addr_tmp}
 fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs
 setexpr rootfs_part ${default_part} + 2
 printenv rootfs_part
