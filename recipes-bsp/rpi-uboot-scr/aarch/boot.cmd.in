@@ -4,7 +4,9 @@ if env exists default_part;then
 else
     setenv default_part 0;
     setenv fallback_part 1;
-    env delete -f fdt_addr && saveenv
+    env delete -f ethaddr
+    env delete -f fdt_addr
+    saveenv
 fi
 
 setenv fdt_addr ${fdt_addr_tmp}
