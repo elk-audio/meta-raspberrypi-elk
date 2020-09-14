@@ -1,4 +1,4 @@
-From d078212b010cfd554e7d6fb09f8554b5f84a1559 Mon Sep 17 00:00:00 2001
+From 760a32117fed81df2c57c6d8ee75f238028b57ba Mon Sep 17 00:00:00 2001
 From: kknitin <nitin@elk.audio>
 Date: Thu, 23 Jul 2020 23:54:00 +0000
 Subject: [PATCH] Patch for rt safe spi_bcm2835. DT is modified to enable spi0
@@ -7,9 +7,11 @@ Subject: [PATCH] Patch for rt safe spi_bcm2835. DT is modified to enable spi0
 ---
  arch/arm/boot/dts/bcm2711-rpi-4-b.dts |  9 ++---
  drivers/spi/spi-bcm2835.c             | 49 ++++++++++++++++++++++++---
+ drivers/spi/spi-bcm2835.h             |  7 ++++
  drivers/spi/spi.c                     |  3 +-
  include/linux/spi/spi.h               |  1 +
- 4 files changed, 53 insertions(+), 9 deletions(-)
+ 5 files changed, 60 insertions(+), 9 deletions(-)
+ create mode 100644 drivers/spi/spi-bcm2835.h
 
 diff --git a/arch/arm/boot/dts/bcm2711-rpi-4-b.dts b/arch/arm/boot/dts/bcm2711-rpi-4-b.dts
 index a967a7b86f2c..692432b23d8e 100644
@@ -44,7 +46,7 @@ index a967a7b86f2c..692432b23d8e 100644
  
  // =============================================
 diff --git a/drivers/spi/spi-bcm2835.c b/drivers/spi/spi-bcm2835.c
-index 7b3eaccf2aaa..b04a827f6628 100644
+index 7b3eaccf2aaa..fecee61ec698 100644
 --- a/drivers/spi/spi-bcm2835.c
 +++ b/drivers/spi/spi-bcm2835.c
 @@ -37,6 +37,7 @@
@@ -105,11 +107,11 @@ index 7b3eaccf2aaa..b04a827f6628 100644
  	desc = dmaengine_prep_slave_sg(chan, sgl, nents, dir, flags);
  	if (!desc)
  		return -EINVAL;
-@@ -596,6 +610,32 @@ static int bcm2835_spi_transfer_one(struct spi_master *master,
+@@ -596,6 +610,33 @@ static int bcm2835_spi_transfer_one(struct spi_master *master,
  	return bcm2835_spi_transfer_one_irq(master, spi, tfr, cs);
  }
  
-+static int bcm2835_spi_transfer_one_message(struct spi_master *ctlr,
++int bcm2835_spi_transfer_one_message(struct spi_master *ctlr,
 +				    struct spi_message *msg)
 +{
 +	struct spi_transfer *xfer;
@@ -134,18 +136,24 @@ index 7b3eaccf2aaa..b04a827f6628 100644
 +
 +	return ret;
 +}
++EXPORT_SYMBOL_GPL(bcm2835_spi_transfer_one_message);
 +
  static int bcm2835_spi_prepare_message(struct spi_master *master,
  				       struct spi_message *msg)
  {
-@@ -725,6 +765,7 @@ static int bcm2835_spi_probe(struct platform_device *pdev)
- 	master->setup = bcm2835_spi_setup;
- 	master->set_cs = bcm2835_spi_set_cs;
- 	master->transfer_one = bcm2835_spi_transfer_one;
-+	master->transfer_one_message = bcm2835_spi_transfer_one_message;
- 	master->handle_err = bcm2835_spi_handle_err;
- 	master->prepare_message = bcm2835_spi_prepare_message;
- 	master->dev.of_node = pdev->dev.of_node;
+diff --git a/drivers/spi/spi-bcm2835.h b/drivers/spi/spi-bcm2835.h
+new file mode 100644
+index 000000000000..85c6a23d52e0
+--- /dev/null
++++ b/drivers/spi/spi-bcm2835.h
+@@ -0,0 +1,7 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef __SPI_BCM2835_H
++#define __SPI_BCM2835_H
++
++extern int bcm2835_spi_transfer_one_message(struct spi_master *ctlr,
++				    struct spi_message *msg);
++#endif
 diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
 index cf1bc7a5876b..d22fa710cd2d 100644
 --- a/drivers/spi/spi.c
