@@ -9,7 +9,11 @@ else
     source /etc/elk-system.conf
 fi
 
-modprobe audio_rtdm audio_buffer_size=$AUDIO_BUFFER_SIZE audio_hat=$AUDIO_HAT
+if [ $AUDIO_HAT = "stereo-elk-pi" ]; then
+    modprobe audio_rtdm audio_buffer_size=$AUDIO_BUFFER_SIZE
+else
+    modprobe audio_rtdm audio_buffer_size=$AUDIO_BUFFER_SIZE audio_hat=$AUDIO_HAT
+fi
 
 if [ $AUDIO_HAT = "elk-pi" ]; then
     modprobe shiftreg_rtdm adc_chans_per_tick=4
