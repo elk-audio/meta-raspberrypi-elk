@@ -13,7 +13,8 @@ RDEPENDS_packagegroup-elk-raspberrypi-system-pkgs = "\
     bluez-firmware-rpidistro-bcm4345c0-hcd \
     iw \
     wireless-regdb \
-    fw_utils \
+    libubootenv \
+    u-boot-fw-utils \
     wpa-supplicant \
     udev-rules-rpi \
     crda \

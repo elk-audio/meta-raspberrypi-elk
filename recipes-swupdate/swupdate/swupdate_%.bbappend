@@ -18,3 +18,4 @@ do_install_append() {
     cp ${WORKDIR}/logo.png ${D}/www/images/
     cp ${WORKDIR}/background.jpg ${D}/www/images/
 }
+
