@@ -9,10 +9,10 @@ else
     source /etc/elk-system.conf
 fi
 
-if [ $AUDIO_HAT = "stereo-elk-pi" ]; then
+if [ $AUDIO_HAT = "elkpi-stereo" ]; then
     modprobe audio_rtdm audio_buffer_size=$AUDIO_BUFFER_SIZE
 else
-    modprobe audio_rtdm audio_buffer_size=$AUDIO_BUFFER_SIZE audio_hat=$AUDIO_HAT
+    modprobe rpi_audio_rtdm audio_buffer_size=$AUDIO_BUFFER_SIZE audio_hat=$AUDIO_HAT
 fi
 
 if [ $AUDIO_HAT = "elk-pi" ]; then

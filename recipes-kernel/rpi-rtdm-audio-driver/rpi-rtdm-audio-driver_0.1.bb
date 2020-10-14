@@ -4,7 +4,7 @@ LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=4a0f8ad6a793571b331b0e19e3dd925c"
 
 SRC_URI = "git://github.com/elk-audio/rpi-rtdm-audio-driver.git;protocol=https;nobranch=1"
-SRCREV = "767709913f6d4a5424b05c4b40f328ffd7b1b9c1"
+SRCREV = "fba3befc989431ab9aa92fb91849eced0a3d3dc1"
 
 inherit module
 
@@ -19,8 +19,9 @@ do_install() {
 
 FILES_${PN} += "${MODULE_INSTALL_DIR}/*"
 
-RPROVIDES_${PN} += "kernel-module-audio-rtdm-${KERNEL_VERSION}"
+RPROVIDES_${PN} += "kernel-module-rpi-audio-rtdm-${KERNEL_VERSION}"
 RPROVIDES_${PN} += "kernel-module-bcm2835-i2s-elk-${KERNEL_VERSION}"
 RPROVIDES_${PN} += "kernel-module-pcm3168a-elk-${KERNEL_VERSION}"
 RPROVIDES_${PN} += "kernel-module-pcm1863-elk-${KERNEL_VERSION}"
 RPROVIDES_${PN} += "kernel-module-pcm5122-elk-${KERNEL_VERSION}"
+

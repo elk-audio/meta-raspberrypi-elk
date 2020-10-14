@@ -11,6 +11,9 @@ KERNEL_VERSION_SANITY_SKIP="1"
 SRC_URI += " \
     file://0001-Ipipe-patch-for-4.19.115.patch \
     file://0002-RT-DMA-fix.patch \
+    file://0004-Fix-for-RT-safe-dma-prepare-sg.patch \
+    file://0005-Patch-for-rt-safe-spi_bcm2835.patch \
+    file://defconfig \
 "
 
 CMDLINE_append_raspberrypi3 = " dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 xenomai.allowed_group=2004 ipv6.disable=1 dwc_otg.speed=1"

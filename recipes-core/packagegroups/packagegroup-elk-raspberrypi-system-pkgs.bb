@@ -19,9 +19,11 @@ RDEPENDS_packagegroup-elk-raspberrypi-system-pkgs = "\
     udev-rules-rpi \
     crda \
     rpi-rtdm-audio-driver \
+    audio-rtdm \
     rpi-shiftreg-rtdm-driver \
     elk-system-conf \
     userland \
     kernel-devicetree \
     kernel-image \
 "
+
