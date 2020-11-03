@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=ddecf3dbe612644d42605ad83584d7bb"
 
 SRC_URI = "gitsm://git@bitbucket.org/mindswteam/audio_rtdm.git;protocol=ssh;nobranch=1"
 S = "${WORKDIR}/git/rpi"
-SRCREV = "09eb9c48aa789d75267dd868326a4a808c23cd45"
+SRCREV = "614e5e3fcac472a7e6b737fc9eb0598334bf5cc4"
 
 inherit module
 
@@ -20,5 +20,5 @@ do_install() {
 
 FILES_${PN} += "${MODULE_INSTALL_DIR}/*"
 
-RPROVIDES_${PN} += "kernel-module-audio-rtdm-${KERNEL_VERSION}"
+RPROVIDES_${PN} += "kernel-module-spi-audio-rtdm-${KERNEL_VERSION}"
 
