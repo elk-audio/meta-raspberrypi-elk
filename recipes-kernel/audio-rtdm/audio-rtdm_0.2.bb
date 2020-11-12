@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=ddecf3dbe612644d42605ad83584d7bb"
 
 SRC_URI = "gitsm://git@bitbucket.org/mindswteam/audio_rtdm.git;protocol=ssh;nobranch=1"
 S = "${WORKDIR}/git/rpi"
-SRCREV = "fe1dddf1cf2315db59651c5fd385db9bf65721e0"
+SRCREV = "6b7a0669bc0b2adc51de30cd8c8af3a0551d88ff"
 
 inherit module
 
