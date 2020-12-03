@@ -14,6 +14,19 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/dropzone.min.js"></script>
     <script src="js/swupdate.min.js"></script>
+    <script type="application/javascript">
+    	function getUrlParameter(name) {
+      	name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+      	var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+      	var results = regex.exec(location.search);
+      	return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    	};
+    	var testRedirect = getUrlParameter('redirect');
+    	var randomnumber = Math.round((Math.random()) * 999 + 1);
+    	if (testRedirect === "") {
+      	window.location = 'index.html?redirect=' + randomnumber;
+    	}
+    </script>
     <title>ELK Audio OS SWUpdate</title>
 </head>
 
