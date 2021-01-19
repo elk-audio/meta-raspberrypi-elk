@@ -8,8 +8,7 @@ KCONFIG_MODE = "--allnoconfig"
 
 SRC_URI += " \
     file://0001-Ipipe-patch-for-4.19.126.patch \
-    file://0002-RT-DMA-fix.patch \
-    file://0004-Fix-for-RT-safe-dma-prepare-sg.patch \
+    file://0002-RT-DMA-patch-for-spi-and-i2s-drivers.patch \
     file://0005-Patch-for-rt-safe-spi_bcm2835.patch \
     file://defconfig \
 "

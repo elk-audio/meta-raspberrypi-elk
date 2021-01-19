@@ -1,38 +1,91 @@
-From 9eda28bc0c9c5834c262f4fcd8c99220fb63fb01 Mon Sep 17 00:00:00 2001
+From 5764ead00eedea7a84feacd5799fe55d41cbe096 Mon Sep 17 00:00:00 2001
 From: kknitin <nitin@elk.audio>
 Date: Mon, 20 Jan 2020 23:05:34 +0000
-Subject: [PATCH] RT DMA fix
+Subject: [PATCH] RT DMA patch for spi and i2s drivers
 
 ---
- drivers/dma/bcm2835-dma.c | 124 +++++++++++++++++++++++++++++++++-----
- drivers/dma/virt-dma.c    |  15 +++--
- drivers/dma/virt-dma.h    |  16 +++--
- 3 files changed, 126 insertions(+), 29 deletions(-)
+ drivers/dma/bcm2835-dma.c       | 192 +++++++++++++++++++++++++++-----
+ drivers/dma/virt-dma.c          |  15 ++-
+ drivers/dma/virt-dma.h          |  16 ++-
+ include/linux/dma/bcm2835-dma.h |  17 +++
+ 4 files changed, 201 insertions(+), 39 deletions(-)
+ create mode 100644 include/linux/dma/bcm2835-dma.h
 
 diff --git a/drivers/dma/bcm2835-dma.c b/drivers/dma/bcm2835-dma.c
-index 4183734a1fbf..1427980082b2 100644
+index 6dbe1525b973..f68e0f955874 100644
 --- a/drivers/dma/bcm2835-dma.c
 +++ b/drivers/dma/bcm2835-dma.c
-@@ -44,6 +44,7 @@
+@@ -44,6 +44,8 @@
  #include <linux/spinlock.h>
  #include <linux/of.h>
  #include <linux/of_dma.h>
 +#include <rtdm/driver.h>
++#include <linux/ipipe_domain.h>
  
  #include "virt-dma.h"
  
-@@ -308,6 +309,10 @@ static const struct bcm2835_dma_cfg_data bcm2838_dma_cfg = {
+@@ -308,6 +310,13 @@ static const struct bcm2835_dma_cfg_data bcm2838_dma_cfg = {
  	.chan_40bit_mask = BIT(11) | BIT(12) | BIT(13) | BIT(14),
  };
  
 +/* RTDM interrupt objects */
++#define NUM_OF_CBS_FOR_RTDMA 30
 +static rtdm_irq_t  dma_rtdm_tx_irq;
 +static rtdm_irq_t  dma_rtdm_rx_irq;
++static struct bcm2835_desc *rt_tx_desc = NULL;
++static struct bcm2835_desc *rt_rx_desc = NULL;
 +
  static inline size_t bcm2835_dma_max_frame_length(struct bcm2835_chan *c)
  {
  	/* lite and normal channels have different max frame length */
-@@ -542,8 +547,9 @@ static struct bcm2835_desc *bcm2835_dma_create_cb_chain(
+@@ -481,27 +490,35 @@ static struct bcm2835_desc *bcm2835_dma_create_cb_chain(
+ 
+ 	if (!frames)
+ 		return NULL;
+-
+-	/* allocate and setup the descriptor. */
+-	d = kzalloc(sizeof(*d) + frames * sizeof(struct bcm2835_cb_entry),
+-		    gfp);
+-	if (!d)
+-		return NULL;
++	if (ipipe_current_domain == ipipe_head_domain) {
++		if (direction == DMA_DEV_TO_MEM)
++			d = rt_rx_desc;
++		else
++			d = rt_tx_desc;
++	} else {
++		/* allocate and setup the descriptor. */
++		d = kzalloc(sizeof(*d) + frames * sizeof(struct bcm2835_cb_entry),
++			gfp);
++		if (!d)
++			return NULL;
++	}
+ 
+ 	d->c = c;
+ 	d->dir = direction;
+ 	d->cyclic = cyclic;
+-
++	d->frames = 0;
+ 	/*
+ 	 * Iterate over all frames, create a control block
+ 	 * for each frame and link them together.
+ 	 */
+ 	for (frame = 0, total_len = 0; frame < frames; d->frames++, frame++) {
+ 		cb_entry = &d->cb_list[frame];
+-		cb_entry->cb = dma_pool_alloc(c->cb_pool, gfp,
+-					      &cb_entry->paddr);
+-		if (!cb_entry->cb)
+-			goto error_cb;
++		if (ipipe_current_domain != ipipe_head_domain) {
++			cb_entry->cb = dma_pool_alloc(c->cb_pool, gfp,
++						&cb_entry->paddr);
++			if (!cb_entry->cb)
++				goto error_cb;
++		}
+ 
+ 		/* fill in the control block */
+ 		control_block = cb_entry->cb;
+@@ -543,8 +560,9 @@ static struct bcm2835_desc *bcm2835_dma_create_cb_chain(
  			d->cb_list[frame - 1].cb->next = cb_entry->paddr;
  
  		/* update src and dst and length */
@@ -43,7 +96,7 @@ index 4183734a1fbf..1427980082b2 100644
  		if (dst && (info & BCM2835_DMA_D_INC))
  			dst += control_block->length;
  
-@@ -676,6 +682,56 @@ static void bcm2835_dma_start_desc(struct bcm2835_chan *c)
+@@ -678,6 +696,53 @@ static void bcm2835_dma_start_desc(struct bcm2835_chan *c)
  	}
  }
  
@@ -76,7 +129,8 @@ index 4183734a1fbf..1427980082b2 100644
 +	unsigned long flags;
 +
 +	/* Acknowledge interrupt */
-+	writel(BCM2835_DMA_INT, c->chan_base + BCM2835_DMA_CS);
++	writel(BCM2835_DMA_INT | BCM2835_DMA_ACTIVE,
++	       c->chan_base + BCM2835_DMA_CS);
 +
 +	d = c->desc;
 +
@@ -84,10 +138,6 @@ index 4183734a1fbf..1427980082b2 100644
 +		if (d->cyclic) {
 +			/* call the cyclic callback */
 +			bcm2835_chan_complete_cyclic(&d->vd);
-+
-+			/* Keep the DMA engine running */
-+			writel(BCM2835_DMA_ACTIVE,
-+			       c->chan_base + BCM2835_DMA_CS);
 +		} else {
 +			bcm2835_chan_complete(&c->desc->vd);
 +			bcm2835_dma_start_desc(c);
@@ -100,7 +150,7 @@ index 4183734a1fbf..1427980082b2 100644
  static irqreturn_t bcm2835_dma_callback(int irq, void *data)
  {
  	struct bcm2835_chan *c = data;
-@@ -691,7 +747,7 @@ static irqreturn_t bcm2835_dma_callback(int irq, void *data)
+@@ -693,7 +758,7 @@ static irqreturn_t bcm2835_dma_callback(int irq, void *data)
  			return IRQ_NONE;
  	}
  
@@ -109,7 +159,7 @@ index 4183734a1fbf..1427980082b2 100644
  
  	/*
  	 * Clear the INT flag to receive further interrupts. Keep the channel
-@@ -717,7 +773,7 @@ static irqreturn_t bcm2835_dma_callback(int irq, void *data)
+@@ -717,7 +782,7 @@ static irqreturn_t bcm2835_dma_callback(int irq, void *data)
  		}
  	}
  
@@ -118,63 +168,17 @@ index 4183734a1fbf..1427980082b2 100644
  
  	return IRQ_HANDLED;
  }
-@@ -740,15 +796,52 @@ static int bcm2835_dma_alloc_chan_resources(struct dma_chan *chan)
- 			   c->irq_flags, "DMA IRQ", c);
- }
- 
-+/* This handler was not present for bcm2835-dma and most certainly no one calls
-+it. Hence, it's safe to use this to enter dma backend to get the rtdm irqs */
-+static int bcm2835_dma_resume(struct dma_chan *chan)
-+{
-+	static rtdm_irq_t *rtdm_irq_handle;
-+	struct bcm2835_chan *c = to_bcm2835_dma_chan(chan);
-+	int ret = 0;
-+
-+	if (chan->private) {
-+		if (!strcmp(chan->private, "rtdm-tx-irq")) {
-+			rtdm_irq_handle = &dma_rtdm_tx_irq;
-+		} else if (!strcmp(chan->private, "rtdm-rx-irq")) {
-+			rtdm_irq_handle = &dma_rtdm_rx_irq;
-+		} else {
-+			return ret;
-+		}
-+		free_irq(c->irq_number, c);
-+		ret = rtdm_irq_request(rtdm_irq_handle, c->irq_number,
-+					bcm2835_dma_rtcallback,
-+					0, "RT DMA IRQ", c);
-+		if (ret) {
-+			printk(KERN_ERR "bcm2835-dma: RT IRQ request failed\n");
-+		}
-+	}
-+	return ret;
-+}
-+
- static void bcm2835_dma_free_chan_resources(struct dma_chan *chan)
- {
- 	struct bcm2835_chan *c = to_bcm2835_dma_chan(chan);
- 
+@@ -747,8 +812,7 @@ static void bcm2835_dma_free_chan_resources(struct dma_chan *chan)
  	vchan_free_chan_resources(&c->vc);
--	free_irq(c->irq_number, c);
--	dma_pool_destroy(c->cb_pool);
- 
+ 	free_irq(c->irq_number, c);
+ 	dma_pool_destroy(c->cb_pool);
+-
 -	dev_dbg(c->vc.chan.device->dev, "Freeing DMA channel %u\n", c->ch);
-+	if (chan->private) {
-+		if (!strcmp(chan->private, "rtdm-tx-irq")) {
-+			rtdm_irq_free(&dma_rtdm_tx_irq);
-+			goto exit;
-+		} else if (!strcmp(chan->private, "rtdm-rx-irq")) {
-+			rtdm_irq_free(&dma_rtdm_rx_irq);
-+			goto exit;
-+		}
-+	}
-+
-+	free_irq(c->irq_number, c);
-+exit:	dma_pool_destroy(c->cb_pool);
 +	dev_dbg(c->vc.chan.device->dev, "Freeing DMA channel %u\n",c->ch);
  }
  
  static size_t bcm2835_dma_desc_size(struct bcm2835_desc *d)
-@@ -792,7 +885,7 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
+@@ -792,7 +856,7 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
  	if (ret == DMA_COMPLETE || !txstate)
  		return ret;
  
@@ -183,7 +187,7 @@ index 4183734a1fbf..1427980082b2 100644
  	vd = vchan_find_desc(&c->vc, cookie);
  	if (vd) {
  		txstate->residue =
-@@ -821,7 +914,7 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
+@@ -821,7 +885,7 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
  		txstate->residue = 0;
  	}
  
@@ -192,7 +196,7 @@ index 4183734a1fbf..1427980082b2 100644
  
  	return ret;
  }
-@@ -831,11 +924,11 @@ static void bcm2835_dma_issue_pending(struct dma_chan *chan)
+@@ -831,11 +895,11 @@ static void bcm2835_dma_issue_pending(struct dma_chan *chan)
  	struct bcm2835_chan *c = to_bcm2835_dma_chan(chan);
  	unsigned long flags;
  
@@ -206,7 +210,7 @@ index 4183734a1fbf..1427980082b2 100644
  }
  
  static struct dma_async_tx_descriptor *bcm2835_dma_prep_dma_memcpy(
-@@ -1030,12 +1123,12 @@ static int bcm2835_dma_terminate_all(struct dma_chan *chan)
+@@ -1030,12 +1094,12 @@ static int bcm2835_dma_terminate_all(struct dma_chan *chan)
  	unsigned long flags;
  	LIST_HEAD(head);
  
@@ -222,7 +226,7 @@ index 4183734a1fbf..1427980082b2 100644
  
  	/* stop DMA activity */
  	if (c->desc) {
-@@ -1045,7 +1138,7 @@ static int bcm2835_dma_terminate_all(struct dma_chan *chan)
+@@ -1045,7 +1109,7 @@ static int bcm2835_dma_terminate_all(struct dma_chan *chan)
  	}
  
  	vchan_get_all_descriptors(&c->vc, &head);
@@ -231,15 +235,7 @@ index 4183734a1fbf..1427980082b2 100644
  	vchan_dma_desc_free_list(&c->vc, &head);
  
  	return 0;
-@@ -1216,6 +1309,7 @@ static int bcm2835_dma_probe(struct platform_device *pdev)
- 	dma_cap_set(DMA_CYCLIC, od->ddev.cap_mask);
- 	dma_cap_set(DMA_SLAVE, od->ddev.cap_mask);
- 	dma_cap_set(DMA_MEMCPY, od->ddev.cap_mask);
-+	od->ddev.device_resume = bcm2835_dma_resume;
- 	od->ddev.device_alloc_chan_resources = bcm2835_dma_alloc_chan_resources;
- 	od->ddev.device_free_chan_resources = bcm2835_dma_free_chan_resources;
- 	od->ddev.device_tx_status = bcm2835_dma_tx_status;
-@@ -1233,7 +1327,7 @@ static int bcm2835_dma_probe(struct platform_device *pdev)
+@@ -1235,7 +1299,7 @@ static int bcm2835_dma_probe(struct platform_device *pdev)
  	od->ddev.residue_granularity = DMA_RESIDUE_GRANULARITY_BURST;
  	od->ddev.dev = &pdev->dev;
  	INIT_LIST_HEAD(&od->ddev.channels);
@@ -248,6 +244,91 @@ index 4183734a1fbf..1427980082b2 100644
  
  	platform_set_drvdata(pdev, od);
  
+@@ -1394,6 +1458,84 @@ static void bcm2835_dma_exit(void)
+ 	platform_driver_unregister(&bcm2835_dma_driver);
+ }
+ 
++int bcm2835_dma_alloc_rtdm_resources(struct dma_chan *chan,
++				enum dma_transfer_direction direction)
++{
++	struct bcm2835_desc *d;
++	struct bcm2835_cb_entry *cb_entry;
++	static rtdm_irq_t *rtdm_irq_handle;
++	struct bcm2835_chan *c = to_bcm2835_dma_chan(chan);
++	int frame, ret = 0;
++	size_t frames = NUM_OF_CBS_FOR_RTDMA;
++
++	d = kzalloc(sizeof(*d) + frames *
++	sizeof(struct bcm2835_cb_entry),
++			GFP_KERNEL);
++	if (!d)
++		return -ENOMEM;
++	for (frame = 0; frame < frames; frame++) {
++		cb_entry = &d->cb_list[frame];
++		cb_entry->cb = dma_pool_alloc(c->cb_pool, GFP_KERNEL,
++				&cb_entry->paddr);
++		if (!cb_entry->cb) {
++			printk("dma_pool_alloc failed\n");
++			return -ENOMEM;
++		}
++	}
++	if (direction == DMA_MEM_TO_DEV) {
++		rt_tx_desc = d;
++		rtdm_irq_handle = &dma_rtdm_tx_irq;
++	} else if (direction == DMA_DEV_TO_MEM) {
++		rt_rx_desc = d;
++		rtdm_irq_handle = &dma_rtdm_rx_irq;
++	} else {
++		for (frame = 0; frame < frames; frame++) {
++			dma_pool_free(c->cb_pool,
++			d->cb_list[frame].cb,
++			d->cb_list[frame].paddr);
++		}
++		kfree(d);
++		return -1;
++	}
++	/* free the prev non-rt irq */
++	free_irq(c->irq_number, c);
++	ret = rtdm_irq_request(rtdm_irq_handle, c->irq_number,
++				bcm2835_dma_rtcallback,
++				0, "RT DMA IRQ", c);
++	if (ret) {
++		printk(KERN_ERR "bcm2835-dma: RT IRQ request failed\n");
++	}
++	return ret;
++}
++EXPORT_SYMBOL_GPL(bcm2835_dma_alloc_rtdm_resources);
++
++int bcm2835_dma_free_rtdm_resources(struct dma_chan *chan,
++				enum dma_transfer_direction direction)
++{
++	int frame;
++	struct bcm2835_desc *d;
++	struct bcm2835_chan *c = to_bcm2835_dma_chan(chan);
++	size_t frames = NUM_OF_CBS_FOR_RTDMA;
++	if (direction == DMA_MEM_TO_DEV) {
++		d = rt_tx_desc;
++		rtdm_irq_free(&dma_rtdm_tx_irq);
++	} else if (direction == DMA_DEV_TO_MEM) {
++		d = rt_rx_desc;
++		rtdm_irq_free(&dma_rtdm_rx_irq);
++	} else {
++		return -1;
++	}
++	for (frame = 0; frame < frames; frame++) {
++		dma_pool_free(c->cb_pool,
++		d->cb_list[frame].cb,
++		d->cb_list[frame].paddr);
++	}
++	kfree(d);
++	return request_irq(c->irq_number, bcm2835_dma_callback,
++			   c->irq_flags, "DMA IRQ", c);
++}
++EXPORT_SYMBOL_GPL(bcm2835_dma_free_rtdm_resources);
++
+ /*
+  * Load after serial driver (arch_initcall) so we see the messages if it fails,
+  * but before drivers (module_init) that need a DMA channel.
 diff --git a/drivers/dma/virt-dma.c b/drivers/dma/virt-dma.c
 index 88ad8ed2a8d6..594749fd1941 100644
 --- a/drivers/dma/virt-dma.c
@@ -371,6 +452,29 @@ index b09b75ab0751..d3564a479467 100644
  
  	vchan_dma_desc_free_list(vc, &head);
  }
+diff --git a/include/linux/dma/bcm2835-dma.h b/include/linux/dma/bcm2835-dma.h
+new file mode 100644
+index 000000000000..7aa89dd9c13d
+--- /dev/null
++++ b/include/linux/dma/bcm2835-dma.h
+@@ -0,0 +1,17 @@
++/*
++* BCM2835 DMA exports for RT safe dma for Elk Audio OS.
++* @copyright 2017-2020 Modern Ancient Instruments Networked AB, dba Elk,
++* Stockholm
++*/
++#ifndef _BCM2835_DMA_H
++#define _BCM2835_DMA_H
++
++#include <linux/dmaengine.h>
++
++int bcm2835_dma_alloc_rtdm_resources(struct dma_chan *chan,
++				enum dma_transfer_direction direction);
++
++int bcm2835_dma_free_rtdm_resources(struct dma_chan *chan,
++				enum dma_transfer_direction direction);
++
++#endif
 -- 
 2.17.1
 
