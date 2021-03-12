@@ -17,6 +17,7 @@ RDEPENDS_packagegroup-elk-raspberrypi-system-pkgs = "\
     u-boot-fw-utils \
     wpa-supplicant \
     udev-rules-rpi \
+    htpdate \
     rpi-rtdm-audio-driver \
     rpi-shiftreg-rtdm-driver \
     elk-system-conf \

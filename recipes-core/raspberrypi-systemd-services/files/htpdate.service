@@ -1,0 +1,12 @@
+[Unit]
+Description=htpdate daemon
+After=multi-user.target
+
+[Service]
+Type=oneshot
+Environment=HTPDATE_ARGS="-a -s -t http://www.ntppool.org"
+ExecStart=/usr/bin/htpdate -d -l $HTPDATE_ARGS
+
+[Install]
+WantedBy=custom-elk.target
+

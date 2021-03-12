@@ -7,7 +7,7 @@ SRC_URI = "\
     file://load-drivers.service \
     file://rfkill-atboot.service \
     file://udata-perms.service \
-    file://elk-time-wait-sync.service \
+    file://htpdate.service \
     file://udata-setup \
     file://load-drivers \
 "
@@ -27,7 +27,7 @@ do_install () {
     install -m 0644 ${WORKDIR}/load-drivers.service ${D}${systemd_system_unitdir}/
     install -m 0644 ${WORKDIR}/rfkill-atboot.service ${D}${systemd_system_unitdir}/
     install -m 0644 ${WORKDIR}/udata-perms.service ${D}${systemd_system_unitdir}/
-    install -m 0644 ${WORKDIR}/elk-time-wait-sync.service ${D}${systemd_system_unitdir}/
+    install -m 0644 ${WORKDIR}/htpdate.service ${D}${systemd_system_unitdir}/
     install -m 0755 ${WORKDIR}/udata-setup ${D}${bindir}
     install -m 0755 ${WORKDIR}/load-drivers ${D}${bindir}
 }
@@ -38,7 +38,7 @@ SYSTEMD_SERVICE_${PN} += " \
     load-drivers.service \
     rfkill-atboot.service \
     udata-perms.service \
-    elk-time-wait-sync.service \
+    htpdate.service \
     "
 SYSTEMD_AUTO_ENABLE = "enable"
 
