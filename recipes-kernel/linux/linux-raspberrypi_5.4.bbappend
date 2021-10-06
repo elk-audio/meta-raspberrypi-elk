@@ -3,33 +3,34 @@ DESCRIPTION = "Append recipe to use xenomai-enabled kernel for 64 \
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
+LINUX_VERSION = "5.4.83"
+SRCREV_machine = "ec0dcf3064b8ba99f226438214407fcea9870f76"
+
 #unset config vars since we have a custom defconfig
 KCONFIG_MODE = "--allnoconfig"
 
 SRC_URI += " \
-    file://0001-Ipipe-patch-for-4.19.126.patch \
+    file://0001-ipipe-5.4.83.patch \
     file://0002-RT-DMA-patch-for-spi-and-i2s-drivers.patch \
     file://0005-Patch-for-rt-safe-spi_bcm2835.patch \
-    file://defconfig \
-"
+    file://elk-defconfig \
+    "
 
-CMDLINE_append_raspberrypi3 = " dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 xenomai.allowed_group=2004 ipv6.disable=1 dwc_otg.speed=1"
-CMDLINE_append_raspberrypi4-64 = " xenomai.allowed_group=2004 "
+CMDLINE_append = " xenomai.allowed_group=2004 "
 
 do_configure_append() {
-    cp ${WORKDIR}/defconfig ${B}/.config
+    cp ${WORKDIR}/elk-defconfig ${B}/.config
 }
 
 do_prepare_kernel () {
     linux_src="${S}"
     xenomai_src="${WORKDIR}/xenomai-src"
-    XENOMAI_REV="0cc363fc7ac65717bb29cfc7303b3b88ffc1f559"
 
     rm -rf ${xenomai_src}
-    git clone https://gitlab.denx.de/Xenomai/xenomai.git -b next ${xenomai_src}
-    git -C ${xenomai_src} checkout ${XENOMAI_REV}
+    git clone https://source.denx.de/Xenomai/xenomai.git -b stable/v3.1.x ${xenomai_src}
 
     ${xenomai_src}/scripts/prepare-kernel.sh --arch=arm64 --linux=${linux_src} --default
 }
 
-addtask prepare_kernel after do_patch before do_configure
+addtask do_prepare_kernel after do_patch before do_configure
+

@@ -1,21 +1,21 @@
-From 5764ead00eedea7a84feacd5799fe55d41cbe096 Mon Sep 17 00:00:00 2001
+From edf921fb80051b877bc4ce17b139de4b961ba335 Mon Sep 17 00:00:00 2001
 From: kknitin <nitin@elk.audio>
-Date: Mon, 20 Jan 2020 23:05:34 +0000
-Subject: [PATCH] RT DMA patch for spi and i2s drivers
+Date: Wed, 29 Sep 2021 14:46:00 +0000
+Subject: [PATCH] Driver mods for safe rt dma
 
 ---
- drivers/dma/bcm2835-dma.c       | 192 +++++++++++++++++++++++++++-----
+ drivers/dma/bcm2835-dma.c       | 184 ++++++++++++++++++++++++++++----
  drivers/dma/virt-dma.c          |  15 ++-
- drivers/dma/virt-dma.h          |  16 ++-
+ drivers/dma/virt-dma.h          |  16 +--
  include/linux/dma/bcm2835-dma.h |  17 +++
- 4 files changed, 201 insertions(+), 39 deletions(-)
+ 4 files changed, 198 insertions(+), 34 deletions(-)
  create mode 100644 include/linux/dma/bcm2835-dma.h
 
 diff --git a/drivers/dma/bcm2835-dma.c b/drivers/dma/bcm2835-dma.c
-index 6dbe1525b973..f68e0f955874 100644
+index 5a9b18edc2b7..8c0a0bcd52d7 100644
 --- a/drivers/dma/bcm2835-dma.c
 +++ b/drivers/dma/bcm2835-dma.c
-@@ -44,6 +44,8 @@
+@@ -32,6 +32,8 @@
  #include <linux/spinlock.h>
  #include <linux/of.h>
  #include <linux/of_dma.h>
@@ -24,8 +24,8 @@ index 6dbe1525b973..f68e0f955874 100644
  
  #include "virt-dma.h"
  
-@@ -308,6 +310,13 @@ static const struct bcm2835_dma_cfg_data bcm2838_dma_cfg = {
- 	.chan_40bit_mask = BIT(11) | BIT(12) | BIT(13) | BIT(14),
+@@ -311,6 +313,13 @@ static const struct bcm2835_dma_cfg_data bcm2711_dma_cfg = {
+ 	.dma_mask = DMA_BIT_MASK(36),
  };
  
 +/* RTDM interrupt objects */
@@ -38,14 +38,12 @@ index 6dbe1525b973..f68e0f955874 100644
  static inline size_t bcm2835_dma_max_frame_length(struct bcm2835_chan *c)
  {
  	/* lite and normal channels have different max frame length */
-@@ -481,27 +490,35 @@ static struct bcm2835_desc *bcm2835_dma_create_cb_chain(
- 
+@@ -485,25 +494,35 @@ static struct bcm2835_desc *bcm2835_dma_create_cb_chain(
  	if (!frames)
  		return NULL;
--
+ 
 -	/* allocate and setup the descriptor. */
--	d = kzalloc(sizeof(*d) + frames * sizeof(struct bcm2835_cb_entry),
--		    gfp);
+-	d = kzalloc(struct_size(d, cb_list, frames), gfp);
 -	if (!d)
 -		return NULL;
 +	if (ipipe_current_domain == ipipe_head_domain) {
@@ -56,7 +54,7 @@ index 6dbe1525b973..f68e0f955874 100644
 +	} else {
 +		/* allocate and setup the descriptor. */
 +		d = kzalloc(sizeof(*d) + frames * sizeof(struct bcm2835_cb_entry),
-+			gfp);
++				gfp);
 +		if (!d)
 +			return NULL;
 +	}
@@ -85,7 +83,7 @@ index 6dbe1525b973..f68e0f955874 100644
  
  		/* fill in the control block */
  		control_block = cb_entry->cb;
-@@ -543,8 +560,9 @@ static struct bcm2835_desc *bcm2835_dma_create_cb_chain(
+@@ -545,8 +564,9 @@ static struct bcm2835_desc *bcm2835_dma_create_cb_chain(
  			d->cb_list[frame - 1].cb->next = cb_entry->paddr;
  
  		/* update src and dst and length */
@@ -96,7 +94,7 @@ index 6dbe1525b973..f68e0f955874 100644
  		if (dst && (info & BCM2835_DMA_D_INC))
  			dst += control_block->length;
  
-@@ -678,6 +696,53 @@ static void bcm2835_dma_start_desc(struct bcm2835_chan *c)
+@@ -682,6 +702,53 @@ static void bcm2835_dma_start_desc(struct bcm2835_chan *c)
  	}
  }
  
@@ -150,7 +148,7 @@ index 6dbe1525b973..f68e0f955874 100644
  static irqreturn_t bcm2835_dma_callback(int irq, void *data)
  {
  	struct bcm2835_chan *c = data;
-@@ -693,7 +758,7 @@ static irqreturn_t bcm2835_dma_callback(int irq, void *data)
+@@ -697,7 +764,7 @@ static irqreturn_t bcm2835_dma_callback(int irq, void *data)
  			return IRQ_NONE;
  	}
  
@@ -159,7 +157,7 @@ index 6dbe1525b973..f68e0f955874 100644
  
  	/*
  	 * Clear the INT flag to receive further interrupts. Keep the channel
-@@ -717,7 +782,7 @@ static irqreturn_t bcm2835_dma_callback(int irq, void *data)
+@@ -721,7 +788,7 @@ static irqreturn_t bcm2835_dma_callback(int irq, void *data)
  		}
  	}
  
@@ -168,7 +166,7 @@ index 6dbe1525b973..f68e0f955874 100644
  
  	return IRQ_HANDLED;
  }
-@@ -747,8 +812,7 @@ static void bcm2835_dma_free_chan_resources(struct dma_chan *chan)
+@@ -755,8 +822,7 @@ static void bcm2835_dma_free_chan_resources(struct dma_chan *chan)
  	vchan_free_chan_resources(&c->vc);
  	free_irq(c->irq_number, c);
  	dma_pool_destroy(c->cb_pool);
@@ -178,7 +176,7 @@ index 6dbe1525b973..f68e0f955874 100644
  }
  
  static size_t bcm2835_dma_desc_size(struct bcm2835_desc *d)
-@@ -792,7 +856,7 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
+@@ -800,7 +866,7 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
  	if (ret == DMA_COMPLETE || !txstate)
  		return ret;
  
@@ -187,7 +185,7 @@ index 6dbe1525b973..f68e0f955874 100644
  	vd = vchan_find_desc(&c->vc, cookie);
  	if (vd) {
  		txstate->residue =
-@@ -821,7 +885,7 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
+@@ -829,7 +895,7 @@ static enum dma_status bcm2835_dma_tx_status(struct dma_chan *chan,
  		txstate->residue = 0;
  	}
  
@@ -196,7 +194,7 @@ index 6dbe1525b973..f68e0f955874 100644
  
  	return ret;
  }
-@@ -831,11 +895,11 @@ static void bcm2835_dma_issue_pending(struct dma_chan *chan)
+@@ -839,11 +905,11 @@ static void bcm2835_dma_issue_pending(struct dma_chan *chan)
  	struct bcm2835_chan *c = to_bcm2835_dma_chan(chan);
  	unsigned long flags;
  
@@ -210,23 +208,16 @@ index 6dbe1525b973..f68e0f955874 100644
  }
  
  static struct dma_async_tx_descriptor *bcm2835_dma_prep_dma_memcpy(
-@@ -1030,12 +1094,12 @@ static int bcm2835_dma_terminate_all(struct dma_chan *chan)
+@@ -1047,7 +1113,7 @@ static int bcm2835_dma_terminate_all(struct dma_chan *chan)
  	unsigned long flags;
  	LIST_HEAD(head);
  
 -	spin_lock_irqsave(&c->vc.lock, flags);
 +	raw_spin_lock_irqsave(&c->vc.lock, flags);
  
- 	/* Prevent this channel being scheduled */
--	spin_lock(&d->lock);
-+	raw_spin_lock(&d->lock);
- 	list_del_init(&c->node);
--	spin_unlock(&d->lock);
-+	raw_spin_unlock(&d->lock);
- 
  	/* stop DMA activity */
  	if (c->desc) {
-@@ -1045,7 +1109,7 @@ static int bcm2835_dma_terminate_all(struct dma_chan *chan)
+@@ -1060,7 +1126,7 @@ static int bcm2835_dma_terminate_all(struct dma_chan *chan)
  	}
  
  	vchan_get_all_descriptors(&c->vc, &head);
@@ -235,16 +226,7 @@ index 6dbe1525b973..f68e0f955874 100644
  	vchan_dma_desc_free_list(&c->vc, &head);
  
  	return 0;
-@@ -1235,7 +1299,7 @@ static int bcm2835_dma_probe(struct platform_device *pdev)
- 	od->ddev.residue_granularity = DMA_RESIDUE_GRANULARITY_BURST;
- 	od->ddev.dev = &pdev->dev;
- 	INIT_LIST_HEAD(&od->ddev.channels);
--	spin_lock_init(&od->lock);
-+	raw_spin_lock_init(&od->lock);
- 
- 	platform_set_drvdata(pdev, od);
- 
-@@ -1394,6 +1458,84 @@ static void bcm2835_dma_exit(void)
+@@ -1427,6 +1493,84 @@ static void bcm2835_dma_exit(void)
  	platform_driver_unregister(&bcm2835_dma_driver);
  }
  
@@ -330,10 +312,10 @@ index 6dbe1525b973..f68e0f955874 100644
   * Load after serial driver (arch_initcall) so we see the messages if it fails,
   * but before drivers (module_init) that need a DMA channel.
 diff --git a/drivers/dma/virt-dma.c b/drivers/dma/virt-dma.c
-index 88ad8ed2a8d6..594749fd1941 100644
+index 256fc662c500..db20d86d534b 100644
 --- a/drivers/dma/virt-dma.c
 +++ b/drivers/dma/virt-dma.c
-@@ -26,11 +26,11 @@ dma_cookie_t vchan_tx_submit(struct dma_async_tx_descriptor *tx)
+@@ -23,11 +23,11 @@ dma_cookie_t vchan_tx_submit(struct dma_async_tx_descriptor *tx)
  	unsigned long flags;
  	dma_cookie_t cookie;
  
@@ -347,7 +329,7 @@ index 88ad8ed2a8d6..594749fd1941 100644
  
  	dev_dbg(vc->chan.device->dev, "vchan %p: txd %p[%x]: submitted\n",
  		vc, vd, cookie);
-@@ -55,9 +55,9 @@ int vchan_tx_desc_free(struct dma_async_tx_descriptor *tx)
+@@ -52,9 +52,9 @@ int vchan_tx_desc_free(struct dma_async_tx_descriptor *tx)
  	struct virt_dma_desc *vd = to_virt_desc(tx);
  	unsigned long flags;
  
@@ -359,7 +341,7 @@ index 88ad8ed2a8d6..594749fd1941 100644
  
  	dev_dbg(vc->chan.device->dev, "vchan %p: txd %p[%x]: freeing\n",
  		vc, vd, vd->tx.cookie);
-@@ -83,14 +83,13 @@ EXPORT_SYMBOL_GPL(vchan_find_desc);
+@@ -80,14 +80,13 @@ EXPORT_SYMBOL_GPL(vchan_find_desc);
   * This tasklet handles the completion of a DMA descriptor by
   * calling its callback and freeing it.
   */
@@ -375,23 +357,23 @@ index 88ad8ed2a8d6..594749fd1941 100644
  	list_splice_tail_init(&vc->desc_completed, &head);
  	vd = vc->cyclic;
  	if (vd) {
-@@ -99,7 +98,6 @@ static void vchan_complete(unsigned long arg)
+@@ -96,7 +95,6 @@ static void vchan_complete(unsigned long arg)
  	} else {
  		memset(&cb, 0, sizeof(cb));
  	}
 -	spin_unlock_irq(&vc->lock);
  
- 	dmaengine_desc_callback_invoke(&cb, NULL);
+ 	dmaengine_desc_callback_invoke(&cb, &vd->tx_result);
  
-@@ -112,6 +110,7 @@ static void vchan_complete(unsigned long arg)
- 		dmaengine_desc_callback_invoke(&cb, NULL);
+@@ -108,6 +106,7 @@ static void vchan_complete(unsigned long arg)
+ 		vchan_vdesc_fini(vd);
  	}
  }
 +EXPORT_SYMBOL_GPL(vchan_complete);
  
  void vchan_dma_desc_free_list(struct virt_dma_chan *vc, struct list_head *head)
  {
-@@ -133,7 +132,7 @@ void vchan_init(struct virt_dma_chan *vc, struct dma_device *dmadev)
+@@ -129,7 +128,7 @@ void vchan_init(struct virt_dma_chan *vc, struct dma_device *dmadev)
  {
  	dma_cookie_init(&vc->chan);
  
@@ -401,10 +383,10 @@ index 88ad8ed2a8d6..594749fd1941 100644
  	INIT_LIST_HEAD(&vc->desc_submitted);
  	INIT_LIST_HEAD(&vc->desc_issued);
 diff --git a/drivers/dma/virt-dma.h b/drivers/dma/virt-dma.h
-index b09b75ab0751..d3564a479467 100644
+index ab158bac03a7..a35deb9d81be 100644
 --- a/drivers/dma/virt-dma.h
 +++ b/drivers/dma/virt-dma.h
-@@ -26,8 +26,11 @@ struct virt_dma_chan {
+@@ -24,8 +24,11 @@ struct virt_dma_chan {
  	struct tasklet_struct task;
  	void (*desc_free)(struct virt_dma_desc *);
  
@@ -418,7 +400,7 @@ index b09b75ab0751..d3564a479467 100644
  	/* protected by vc.lock */
  	struct list_head desc_allocated;
  	struct list_head desc_submitted;
-@@ -48,6 +51,7 @@ void vchan_init(struct virt_dma_chan *vc, struct dma_device *dmadev);
+@@ -46,6 +49,7 @@ void vchan_init(struct virt_dma_chan *vc, struct dma_device *dmadev);
  struct virt_dma_desc *vchan_find_desc(struct virt_dma_chan *, dma_cookie_t);
  extern dma_cookie_t vchan_tx_submit(struct dma_async_tx_descriptor *);
  extern int vchan_tx_desc_free(struct dma_async_tx_descriptor *);
@@ -426,9 +408,9 @@ index b09b75ab0751..d3564a479467 100644
  
  /**
   * vchan_tx_prep - prepare a descriptor
-@@ -65,9 +69,9 @@ static inline struct dma_async_tx_descriptor *vchan_tx_prep(struct virt_dma_chan
- 	vd->tx.tx_submit = vchan_tx_submit;
- 	vd->tx.desc_free = vchan_tx_desc_free;
+@@ -66,9 +70,9 @@ static inline struct dma_async_tx_descriptor *vchan_tx_prep(struct virt_dma_chan
+ 	vd->tx_result.result = DMA_TRANS_NOERROR;
+ 	vd->tx_result.residue = 0;
  
 -	spin_lock_irqsave(&vc->lock, flags);
 +	raw_spin_lock_irqsave(&vc->lock, flags);
@@ -438,7 +420,7 @@ index b09b75ab0751..d3564a479467 100644
  
  	return &vd->tx;
  }
-@@ -186,11 +190,11 @@ static inline void vchan_free_chan_resources(struct virt_dma_chan *vc)
+@@ -187,11 +191,11 @@ static inline void vchan_free_chan_resources(struct virt_dma_chan *vc)
  	unsigned long flags;
  	LIST_HEAD(head);
  
@@ -454,7 +436,7 @@ index b09b75ab0751..d3564a479467 100644
  }
 diff --git a/include/linux/dma/bcm2835-dma.h b/include/linux/dma/bcm2835-dma.h
 new file mode 100644
-index 000000000000..7aa89dd9c13d
+index 000000000000..69256906c29c
 --- /dev/null
 +++ b/include/linux/dma/bcm2835-dma.h
 @@ -0,0 +1,17 @@

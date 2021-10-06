@@ -1,4 +1,6 @@
 #!/bin/bash
+modprobe i2c_dev
+
 ELK_SYSTEM_CONF="/udata/.elk-system/elk-system.conf"
 if [ -e $ELK_SYSTEM_CONF ]; then
     source $ELK_SYSTEM_CONF
@@ -9,13 +11,39 @@ else
     source /etc/elk-system.conf
 fi
 
-modprobe audio_rtdm audio_buffer_size=$AUDIO_BUFFER_SIZE audio_hat=$AUDIO_HAT
+I2C_IS_PCM5122=`i2cdetect -y 1 | grep 4d | cut -d' ' -f 15`
+I2C_IS_PCM1863=`i2cdetect -y 1 | grep 4a | cut -d' ' -f 12`
+I2C_IS_PCM3168A=`i2cdetect -y 1 | grep 44 | cut -d' ' -f 6`
+I2C_IS_CLKGEN=`i2cdetect -y 1 | grep 60 | cut -d' ' -f 2`
+
+if [ "$I2C_IS_PCM5122" == "4d" ] && [ "$I2C_IS_PCM1863" == "4a" ]; then
+    AUDIO_HAT="hifi-berry-pro"
+    echo "HAT is $AUDIO_HAT"
+    CPU_SPEED="min"
+elif [ "$I2C_IS_PCM5122" == "4d" ] && [ -z "$I2C_IS_PCM1863" ]; then
+    AUDIO_HAT="hifi-berry"
+    CPU_SPEED="min"
+elif [ "$I2C_IS_PCM3168A" == "44" ] || [ "$I2C_IS_CLKGEN" == "60" ]; then
+    AUDIO_HAT="elk-pi"
+    echo "HAT is $AUDIO_HAT"
+else
+    AUDIO_HAT="elkpi-stereo"
+    echo "HAT is $AUDIO_HAT"
+    CPU_SPEED="max"
+fi
+
+if [ $AUDIO_HAT = "elkpi-stereo" ]; then
+    modprobe spi_audio_rtdm audio_buffer_size=$AUDIO_BUFFER_SIZE
+else
+    modprobe rpi_audio_rtdm audio_buffer_size=$AUDIO_BUFFER_SIZE audio_hat=$AUDIO_HAT
+fi
 
 if [ $AUDIO_HAT = "elk-pi" ]; then
     modprobe shiftreg_rtdm adc_chans_per_tick=4
 fi
 
-modprobe i2c_dev
+chown mind:mind /sys/class/audio_rtdm/audio_buffer_size
+chmod 666 /dev/rtp*
 rfkill unblock all
 
 # Set CPU Speed
