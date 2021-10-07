@@ -1,15 +1,15 @@
-From 6753ed017c9c840f3fd121d0535743fc3c275aec Mon Sep 17 00:00:00 2001
+From b7b127361dbb680527f5799235a8ab4bfcd9a55f Mon Sep 17 00:00:00 2001
 From: kknitin <nitin@elk.audio>
 Date: Wed, 29 Sep 2021 15:52:19 +0000
 Subject: [PATCH] Mod for rt safe spi
 
 ---
- arch/arm/boot/dts/bcm2711-rpi-4-b.dts |  9 ++---
- drivers/spi/spi-bcm2835.c             | 48 +++++++++++++++++++++++++--
- drivers/spi/spi-bcm2835.h             |  7 ++++
+ arch/arm/boot/dts/bcm2711-rpi-4-b.dts |  9 ++--
+ drivers/spi/spi-bcm2835.c             | 70 ++++++++++++++++++++++-----
+ drivers/spi/spi-bcm2835.h             |  7 +++
  drivers/spi/spi.c                     |  3 +-
  include/linux/spi/spi.h               |  1 +
- 5 files changed, 60 insertions(+), 8 deletions(-)
+ 5 files changed, 72 insertions(+), 18 deletions(-)
  create mode 100644 drivers/spi/spi-bcm2835.h
 
 diff --git a/arch/arm/boot/dts/bcm2711-rpi-4-b.dts b/arch/arm/boot/dts/bcm2711-rpi-4-b.dts
@@ -45,7 +45,7 @@ index b5daeee077ec..43c1c078d483 100644
  
  &gpio {
 diff --git a/drivers/spi/spi-bcm2835.c b/drivers/spi/spi-bcm2835.c
-index 7b5216461bc4..a53f1895d184 100644
+index 7b5216461bc4..ac466c2d2819 100644
 --- a/drivers/spi/spi-bcm2835.c
 +++ b/drivers/spi/spi-bcm2835.c
 @@ -30,6 +30,7 @@
@@ -56,18 +56,37 @@ index 7b5216461bc4..a53f1895d184 100644
  
  /* SPI register offsets */
  #define BCM2835_SPI_CS			0x00
-@@ -597,8 +598,10 @@ static void bcm2835_spi_undo_prologue(struct bcm2835_spi *bs)
+@@ -597,24 +598,34 @@ static void bcm2835_spi_undo_prologue(struct bcm2835_spi *bs)
   */
  static void bcm2835_spi_dma_rx_done(void *data)
  {
 +	struct spi_master *master = data;
  	struct spi_controller *ctlr = data;
  	struct bcm2835_spi *bs = spi_controller_get_devdata(ctlr);
+-
+-	/* terminate tx-dma as we do not have an irq for it
+-	 * because when the rx dma will terminate and this callback
+-	 * is called the tx-dma must have finished - can't get to this
+-	 * situation otherwise...
+-	 */
+-	dmaengine_terminate_async(ctlr->dma_tx);
+-	bs->tx_dma_active = false;
+-	bs->rx_dma_active = false;
+-	bcm2835_spi_undo_prologue(bs);
 +	struct spi_message *msg = master->cur_msg;
++
++	if (ipipe_current_domain != ipipe_head_domain) {
++		/* terminate tx-dma as we do not have an irq for it
++		* because when the rx dma will terminate and this callback
++		* is called the tx-dma must have finished - can't get to this
++		* situation otherwise...
++		*/
++		dmaengine_terminate_async(ctlr->dma_tx);
++		bs->tx_dma_active = false;
++		bs->rx_dma_active = false;
++		bcm2835_spi_undo_prologue(bs);
++	}
  
- 	/* terminate tx-dma as we do not have an irq for it
- 	 * because when the rx dma will terminate and this callback
-@@ -613,8 +616,14 @@ static void bcm2835_spi_dma_rx_done(void *data)
  	/* reset fifo and HW */
  	bcm2835_spi_reset_hw(ctlr);
  
@@ -84,7 +103,7 @@ index 7b5216461bc4..a53f1895d184 100644
  }
  
  /**
-@@ -681,14 +690,20 @@ static int bcm2835_spi_prepare_sg(struct spi_controller *ctlr,
+@@ -681,14 +692,20 @@ static int bcm2835_spi_prepare_sg(struct spi_controller *ctlr,
  		nents = tfr->tx_sg.nents;
  		sgl   = tfr->tx_sg.sgl;
  		flags = tfr->rx_buf ? 0 : DMA_PREP_INTERRUPT;
@@ -106,7 +125,7 @@ index 7b5216461bc4..a53f1895d184 100644
  	desc = dmaengine_prep_slave_sg(chan, sgl, nents, dir, flags);
  	if (!desc)
  		return -EINVAL;
-@@ -1129,6 +1144,33 @@ static int bcm2835_spi_transfer_one(struct spi_controller *ctlr,
+@@ -1129,6 +1146,33 @@ static int bcm2835_spi_transfer_one(struct spi_controller *ctlr,
  	return bcm2835_spi_transfer_one_irq(ctlr, spi, tfr, cs, true);
  }
  
