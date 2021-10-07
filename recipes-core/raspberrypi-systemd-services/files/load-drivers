@@ -42,7 +42,7 @@ if [ $AUDIO_HAT = "elk-pi" ]; then
     modprobe shiftreg_rtdm adc_chans_per_tick=4
 fi
 
-chown mind:mind /sys/class/audio_rtdm/audio_buffer_size
+chown -R mind:mind /sys/class/audio_rtdm/
 chmod 666 /dev/rtp*
 rfkill unblock all
 
