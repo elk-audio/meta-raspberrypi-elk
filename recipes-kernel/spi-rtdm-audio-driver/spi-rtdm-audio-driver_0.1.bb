@@ -3,7 +3,7 @@ HOMEPAGE = "https://github.com/elk-audio/rpi-rtdm-audio-driver"
 LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://COPYING;md5=4a0f8ad6a793571b331b0e19e3dd925c"
 
-SRCREV = "334894d2a766ff8bcd2feaefa431a536eb57d9c0"
+SRCREV = "997e003e234e0cf4f9e45c5b70d0d976b5c0b59d"
 SRC_URI = "gitsm://github.com/elk-audio/spi-rtdm-audio-driver;protocol=https;nobranch=1"
 S = "${WORKDIR}/git"
 
