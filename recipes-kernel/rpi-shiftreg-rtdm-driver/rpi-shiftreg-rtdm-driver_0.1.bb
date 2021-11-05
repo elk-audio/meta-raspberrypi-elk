@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = " \
 SRC_URI = "gitsm://github.com/elk-audio/rpi-shiftreg-rtdm-driver.git;protocol=https;nobranch=1"
 SRCREV = "cb546b38a2a5ba6403b00fa45641f92f93c78d47"
 
-S = "${WORKDIR}/git/boards/elk_pi/"
+S = "${WORKDIR}/git/boards/elk_pi"
 
 inherit module
 
@@ -25,3 +25,4 @@ FILES_${PN} += "${MODULE_INSTALL_DIR}/*"
 # The inherit of module.bbclass will automatically name module packages with
 # "kernel-module-" prefix as required by the oe-core build environment.
 RPROVIDES_${PN} = "kernel-module-shiftreg-rtdm-${KERNEL_VERSION}"
+
