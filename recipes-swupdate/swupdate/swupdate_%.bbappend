@@ -1,5 +1,5 @@
 # Append recipe for swupdate, for custom changes for Elk Pi
-FILESEXTRAPATHS_prepend := "${THISDIR}/swupdate:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/swupdate:"
 
 SRC_URI += "\
     file://swupdate-usb@.service \
@@ -12,7 +12,7 @@ SRC_URI += "\
     file://swupdate-ota \
 "
 
-do_install_append() {
+do_install:append() {
     install -m 0655 ${WORKDIR}/swupdate-ota ${D}${bindir}
     cp ${WORKDIR}/index.html ${D}/www/
     cp ${WORKDIR}/logo.png ${D}/www/images/

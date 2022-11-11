@@ -1,4 +1,4 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 LIC_FILES_CHKSUM_raspberrypi3 = "\
     file://LICENCE.broadcom_bcm43xx;md5=3160c14df7228891b868060e1951dfbc \
@@ -6,12 +6,12 @@ LIC_FILES_CHKSUM_raspberrypi3 = "\
 "
 
 SRC_URI_raspberrypi3 = " \
-    git://github.com/RPi-Distro/firmware-nonfree \
+    git://github.com/RPi-Distro/firmware-nonfree;branch=master;protocol=https \
     file://0001-brcmfmac43455-sdio.txt-Follow-raspbian-change-for-bo.patch \
     "
 SRCREV_raspberrypi3 = "b518de45ced519e8f7a499f4778100173402ae43"
 
-do_unpack_append_raspberrypi3() {
+do_unpack:append_raspberrypi3() {
     bb.build.exec_func('do_clean_pc', d)
 }
 

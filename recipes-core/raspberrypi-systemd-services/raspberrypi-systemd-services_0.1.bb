@@ -34,7 +34,7 @@ do_install () {
 
 NATIVE_SYSTEMD_SUPPORT = "1"
 SYSTEMD_PACKAGES = "${PN}"
-SYSTEMD_SERVICE_${PN} += " \
+SYSTEMD_SERVICE:${PN} += " \
     load-drivers.service \
     rfkill-atboot.service \
     udata-perms.service \
@@ -44,8 +44,8 @@ SYSTEMD_AUTO_ENABLE = "enable"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-FILES_${PN} += "${systemd_system_unitdir}/*"
-FILES_${PN} += "${bindir}/*"
+FILES:${PN} += "${systemd_system_unitdir}/*"
+FILES:${PN} += "${bindir}/*"
 
-RDEPENDS_${PN} = "bash"
+RDEPENDS:${PN} = "bash"
 

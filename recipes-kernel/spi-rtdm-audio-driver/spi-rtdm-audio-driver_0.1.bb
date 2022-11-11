@@ -16,7 +16,7 @@ do_install() {
     install -m 0644 ${S}/*.ko ${D}${MODULE_INSTALL_DIR}
 }
 
-FILES_${PN} += "${MODULE_INSTALL_DIR}/*"
+FILES:${PN} += "${MODULE_INSTALL_DIR}/*"
 
-RPROVIDES_${PN} += "kernel-module-spi-audio-rtdm-${KERNEL_VERSION}"
+RPROVIDES:${PN} += "kernel-module-spi-audio-rtdm-${KERNEL_VERSION}"
 

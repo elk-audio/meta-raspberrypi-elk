@@ -1,4 +1,4 @@
-do_deploy_append() {
+do_deploy:append() {
     # disable BT for Pi3/Pi0W if any
     if [ "${DISABLE_BT}" = "1" ]; then
         echo "# Disable Bluetooth" >>${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
