@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;m
 
 DEPENDS = "swupdate"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/swupdate-rpi-client:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/swupdate-rpi-client:"
 
 SRC_URI = "file://get-latest-swu"
 
@@ -15,7 +15,7 @@ do_install() {
     install -m 0755 ${WORKDIR}/get-latest-swu ${D}${bindir}
 }
 
-FILES_${PN} = "${bindir}/*"
-FILES_${PN} += "${sysconfdir}/*"
+FILES:${PN} = "${bindir}/*"
+FILES:${PN} += "${sysconfdir}/*"
 
-INSANE_SKIP_${PN} = "file-rdeps"
+INSANE_SKIP:${PN} = "file-rdeps"

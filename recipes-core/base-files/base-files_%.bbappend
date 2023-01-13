@@ -1,4 +1,4 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 SRC_URI += "\
     file://dot.profile \
@@ -10,7 +10,7 @@ SRC_URI += "\
 UDEV_RULES_DIR = "/etc/udev/rules.d"
 UDATA_DIR = "/udata"
 
-do_install_append() {
+do_install:append() {
     install -d ${D}${sysconfdir}/profile.d
     install -m 0644 ${WORKDIR}/dot.profile ${D}${sysconfdir}/profile.d/elk_profile.sh
     install -m 0644 ${WORKDIR}/dot.profile ${D}${sysconfdir}/skel/.profile

@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;m
 
 inherit packagegroup
 
-RDEPENDS_packagegroup-elk-raspberrypi-system-pkgs = "\
+RDEPENDS:packagegroup-elk-raspberrypi-system-pkgs = "\
     raspberrypi-systemd-services \
     linux-firmware-rpidistro-bcm43430 \
     linux-firmware-rpidistro-bcm43455 \

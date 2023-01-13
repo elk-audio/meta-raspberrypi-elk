@@ -14,4 +14,4 @@ do_install() {
     install -m 0644 ${WORKDIR}/blacklist.conf ${D}${MODPROBE_CONF_DIR}
 }
 
-FILES_${PN} = "${MODPROBE_CONF_DIR}*"
+FILES:${PN} = "${MODPROBE_CONF_DIR}*"
