@@ -1,7 +1,7 @@
 DESCRIPTION = "Append recipe to use xenomai-enabled kernel for 64 \
-               bit version of Elk, but this is not used/supported currently"
+               bit version of Elk"
 
-FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 LINUX_VERSION = "5.4.83"
 SRCREV_machine = "ec0dcf3064b8ba99f226438214407fcea9870f76"
@@ -10,10 +10,10 @@ SRCREV_machine = "ec0dcf3064b8ba99f226438214407fcea9870f76"
 KCONFIG_MODE = "--allnoconfig"
 
 SRC_URI += " \
-    file://0001-ipipe-5.4.83.patch \
-    file://0002-RT-DMA-patch-for-spi-and-i2s-drivers.patch \
-    file://0005-Patch-for-rt-safe-spi_bcm2835.patch \
-    file://elk-defconfig \
+    file://linux-${LINUX_VERSION}/0001-ipipe-5.4.83.patch \
+    file://linux-${LINUX_VERSION}/0002-RT-DMA-patch-for-spi-and-i2s-drivers.patch \
+    file://linux-${LINUX_VERSION}/0005-Patch-for-rt-safe-spi_bcm2835.patch \
+    file://linux-${LINUX_VERSION}/elk-defconfig \
     "
 
 CMDLINE:append = " xenomai.allowed_group=2004 "

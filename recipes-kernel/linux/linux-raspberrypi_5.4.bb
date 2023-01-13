@@ -13,10 +13,10 @@ KMETA = "kernel-meta"
 SRC_URI = " \
     git://github.com/raspberrypi/linux.git;name=machine;branch=${LINUX_RPI_BRANCH};protocol=https \
     git://git.yoctoproject.org/yocto-kernel-cache;type=kmeta;name=meta;branch=${LINUX_RPI_KMETA_BRANCH};destsuffix=${KMETA} \
-    file://0001-Revert-selftests-bpf-Skip-perf-hw-events-test-if-the.patch \
-    file://0002-Revert-selftests-bpf-Fix-perf_buffer-test-on-systems.patch \
-    file://powersave.cfg \
-    file://android-drivers.cfg \
+    file://linux-${LINUX_VERSION}/0001-Revert-selftests-bpf-Skip-perf-hw-events-test-if-the.patch \
+    file://linux-${LINUX_VERSION}/0002-Revert-selftests-bpf-Fix-perf_buffer-test-on-systems.patch \
+    file://linux-${LINUX_VERSION}/powersave.cfg \
+    file://linux-${LINUX_VERSION}/android-drivers.cfg \
     "
 
 require linux-raspberrypi-elk.inc
