@@ -22,5 +22,19 @@ The key contributions of this layer to Elk PI Audio OS image are:
   * SWUpdate configuration and swupdate client for Elk Pi.
   * Other system-related modifications.
 
+# Important notes
+Starting from ELK Audio OS 1.0 release we have moved from Xenomai 3 to Xenomai 4.
+
+As part of this migration only the audio driver has been updated, so the following drivers are now deprecated:
+
+  * `rpi-rtdm-audio-driver` (it is replaced by `rpi-evl-audio-driver`)
+  * `rpi-shiftreg-rtdm-driver`
+  * `spi-rtdm-audio-driver`
+
+As a consequence:
+
+  * `elk-pi` and `elkpi-stereo` hats are not supported
+  * `sensei` application will not work
+
 ---
-Copyright 2017-2019 Modern Ancient Instruments Networked AB, dba Elk, Stockholm, Sweden.
+Copyright 2017-2023 ELK Audio AB, Stockholm, Sweden.

@@ -9,5 +9,7 @@ do_deploy:append() {
     echo "dtparam=i2c_arm=on" >>${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
     echo "dtparam=i2c_vc=on" >>${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
     echo "force_eeprom_read=0" >>${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "arm_freq=1200" >>${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "arm_freq_min=800" >>${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    sed -i '/vc4-fkms-v3d/c\#dtoverlay=vc4-fkms-v3d' ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
 }
-

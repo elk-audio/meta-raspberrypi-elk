@@ -20,6 +20,7 @@ RDEPENDS:packagegroup-elk-raspberrypi-system-pkgs = "\
     wpa-supplicant \
     udev-rules-rpi \
     htpdate \
+    rpi-evl-audio-driver \
     elk-system-conf \
     userland \
     kernel-devicetree \
@@ -29,4 +30,3 @@ RDEPENDS:packagegroup-elk-raspberrypi-system-pkgs = "\
 #    rpi-rtdm-audio-driver 
 #    spi-rtdm-audio-driver 
 #    rpi-shiftreg-rtdm-driver 
-

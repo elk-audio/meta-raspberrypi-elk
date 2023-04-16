@@ -1,5 +1,5 @@
 [Unit]
-Description=Load the required rtdm drivers
+Description=Load the required elk audio drivers
 After=systemd-udevd.service udata.mount
 
 [Service]
