@@ -35,6 +35,7 @@ if [ $AUDIO_HAT = "hifi-berry-pro" ] || [ $AUDIO_HAT = "hifi-berry" ]; then
     chown -R mind:mind /sys/class/audio_evl
 else
     echo "Sorry, no audio driver for HAT $AUDIO_HAT in this version."
+    touch /tmp/hat-not-supported
 fi
 
 # Ensure wireless devices are not blocked
@@ -52,5 +53,6 @@ then
     exit 0
 else
     echo "audio driver load failed"
+    touch /tmp/audio-driver-load-failed
     exit 1
 fi
