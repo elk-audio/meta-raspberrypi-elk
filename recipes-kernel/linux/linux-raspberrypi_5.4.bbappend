@@ -16,8 +16,6 @@ SRC_URI += " \
     file://linux-${LINUX_VERSION}/elk-defconfig \
     "
 
-CMDLINE:append = " xenomai.allowed_group=2004 "
-
 do_configure:append() {
     cp ${WORKDIR}/elk-defconfig ${B}/.config
 }

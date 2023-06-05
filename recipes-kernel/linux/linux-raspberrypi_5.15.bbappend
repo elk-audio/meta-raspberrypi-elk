@@ -13,8 +13,6 @@ SRC_URI += "\
     file://linux-${LINUX_VERSION}/elk-defconfig \
 "
 
-CMDLINE:append = " isolcpus=2-3 evl.oobcpus=2-3 "
-
 do_configure:append() {
     cp ${WORKDIR}/linux-${LINUX_VERSION}/elk-defconfig ${B}/.config
 }

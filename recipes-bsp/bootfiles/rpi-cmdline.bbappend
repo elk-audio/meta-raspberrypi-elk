@@ -10,4 +10,4 @@ CMDLINE_SERIAL = "${@oe.utils.conditional("ENABLE_UART", "1", "${CMDLINE_SERIAL_
 CMDLINE_KGDB_IF_ENABLED = "kgdboc=${@get_tty(d)},${@get_baudrate(d)}"
 CMDLINE_KGDB = "${@oe.utils.conditional("ENABLE_KGDB", "1", "${CMDLINE_KGDB_IF_ENABLED}", "", d)}"
 
-CMDLINE:append = " quiet xenomai.allowed_group=2004 "
+CMDLINE:append = " quiet"
