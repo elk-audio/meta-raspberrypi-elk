@@ -1,3 +1,6 @@
+# linux-firmware-rpidistro append
+# Set specific version for raspberrypi3
+
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 LIC_FILES_CHKSUM_raspberrypi3 = "\

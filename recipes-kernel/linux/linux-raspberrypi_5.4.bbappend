@@ -1,5 +1,5 @@
-DESCRIPTION = "Append recipe to use xenomai-enabled kernel for 64 \
-               bit version of Elk"
+# 5.4 kernel append
+# Use xenomai3 enabled RPI kernel
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 

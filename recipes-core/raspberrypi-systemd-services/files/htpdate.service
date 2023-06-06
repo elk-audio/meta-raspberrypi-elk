@@ -9,4 +9,3 @@ ExecStart=/usr/bin/htpdate -d -l $HTPDATE_ARGS
 
 [Install]
 WantedBy=custom-elk.target
-

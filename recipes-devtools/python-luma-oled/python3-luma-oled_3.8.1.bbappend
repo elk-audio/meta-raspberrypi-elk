@@ -1,4 +1,5 @@
-SUMMARY = "Install demo opts alongside luma oled"
+# python3-luma append
+# Install demo opts alongside luma oled
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 

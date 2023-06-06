@@ -24,4 +24,3 @@ RPROVIDES:${PN} += "kernel-module-bcm2835-i2s-elk-${KERNEL_VERSION}"
 RPROVIDES:${PN} += "kernel-module-pcm3168a-elk-${KERNEL_VERSION}"
 RPROVIDES:${PN} += "kernel-module-pcm1863-elk-${KERNEL_VERSION}"
 RPROVIDES:${PN} += "kernel-module-pcm5122-elk-${KERNEL_VERSION}"
-

@@ -28,4 +28,3 @@ then
     umount /boot
     poweroff
 fi
-

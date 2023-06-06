@@ -1,3 +1,5 @@
+# base-files append for raspberrypi
+
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 SRC_URI += "\
@@ -26,4 +28,3 @@ do_install:append() {
 FILES_PN += "${UDEV_RULES_DIR}"
 FILES_PN += "${UDEV_RULES_DIR}/90-i2c.rules"
 FILES_PN += "${sysconfdir}/profile.d/*"
-

@@ -1,4 +1,5 @@
-SUMMARY = "Replace meta-raspberrypy boot script with custom elk boot script"
+# rpi-u-boot-scr append
+# Replace meta-raspberrypy boot script with custom elk boot script
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/${MACHINE}:"
 

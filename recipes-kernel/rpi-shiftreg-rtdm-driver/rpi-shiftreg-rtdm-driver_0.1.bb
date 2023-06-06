@@ -25,4 +25,3 @@ FILES:${PN} += "${MODULE_INSTALL_DIR}/*"
 # The inherit of module.bbclass will automatically name module packages with
 # "kernel-module-" prefix as required by the oe-core build environment.
 RPROVIDES:${PN} = "kernel-module-shiftreg-rtdm-${KERNEL_VERSION}"
-

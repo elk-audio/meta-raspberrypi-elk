@@ -48,4 +48,3 @@ FILES:${PN} += "${systemd_system_unitdir}/*"
 FILES:${PN} += "${bindir}/*"
 
 RDEPENDS:${PN} = "bash"
-

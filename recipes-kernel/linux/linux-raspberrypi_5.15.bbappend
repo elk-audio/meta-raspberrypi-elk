@@ -1,4 +1,5 @@
-DESCRIPTION = "Append recipe to use EVL enabled RPI kernel"
+# 5.15 kernel append
+# Use EVL enabled RPI kernel
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 

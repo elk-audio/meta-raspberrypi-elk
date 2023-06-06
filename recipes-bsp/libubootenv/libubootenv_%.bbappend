@@ -1,4 +1,5 @@
-SUMMARY = "Install fw_env.config as u-boot does not install in the system"
+# libubootenv append
+# Install fw_env.config as u-boot does not install in the system
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 

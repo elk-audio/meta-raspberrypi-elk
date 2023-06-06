@@ -26,7 +26,6 @@ RDEPENDS:packagegroup-elk-raspberrypi-system-pkgs = "\
     kernel-devicetree \
     kernel-image \
 "
-
 #    rpi-rtdm-audio-driver 
 #    spi-rtdm-audio-driver 
 #    rpi-shiftreg-rtdm-driver 

@@ -1,3 +1,6 @@
+# rpi-cmdline append
+# Setup machine related cmdline settings
+
 def get_baudrate(d):
     return d.getVar('SERIAL_CONSOLES').split(";")[0]
 

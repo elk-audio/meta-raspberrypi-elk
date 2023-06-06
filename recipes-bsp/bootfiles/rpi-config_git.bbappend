@@ -1,3 +1,12 @@
+# rpi-config append
+# Setup some machine related configuration in /boot/config.txt:
+# - UART baud rate
+# - Minimum and maximum CPU frequency
+# - Enable I2S
+# - Enable I2C
+# - Disable vc4-fkms-v3d
+# - force_eeprom_read=0
+
 def get_baudrate(d):
     return d.getVar('SERIAL_CONSOLES').split(";")[0]
 

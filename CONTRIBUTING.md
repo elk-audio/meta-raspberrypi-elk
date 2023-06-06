@@ -15,4 +15,3 @@ When writing a bug report, try to be as complete as you can regarding the contex
 ## Submitting a PR
 
 A signed Contributor Agreement (CA) is required for submitting Pull Requests to this repository. Please contact tech@elk.audio for more information.
-

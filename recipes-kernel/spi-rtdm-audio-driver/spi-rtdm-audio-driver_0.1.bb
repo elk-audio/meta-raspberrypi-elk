@@ -19,4 +19,3 @@ do_install() {
 FILES:${PN} += "${MODULE_INSTALL_DIR}/*"
 
 RPROVIDES:${PN} += "kernel-module-spi-audio-rtdm-${KERNEL_VERSION}"
-

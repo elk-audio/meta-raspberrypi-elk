@@ -1,3 +1,6 @@
+# u-boot append
+# Adds elk u-boot configuration
+
 FILESEXTRAPATHS:prepend := "${THISDIR}/u-boot:"
 
 DEPENDS:append_rpi = " rpi-u-boot-scr"
