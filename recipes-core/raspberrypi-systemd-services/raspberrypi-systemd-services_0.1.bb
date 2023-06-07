@@ -6,9 +6,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;m
 SRC_URI = "\
     file://load-drivers.service \
     file://rfkill-atboot.service \
-    file://udata-perms.service \
     file://htpdate.service \
-    file://udata-setup \
     file://load-drivers \
 "
 
@@ -26,9 +24,7 @@ do_install () {
     install -d ${D}${bindir}
     install -m 0644 ${WORKDIR}/load-drivers.service ${D}${systemd_system_unitdir}/
     install -m 0644 ${WORKDIR}/rfkill-atboot.service ${D}${systemd_system_unitdir}/
-    install -m 0644 ${WORKDIR}/udata-perms.service ${D}${systemd_system_unitdir}/
     install -m 0644 ${WORKDIR}/htpdate.service ${D}${systemd_system_unitdir}/
-    install -m 0755 ${WORKDIR}/udata-setup ${D}${bindir}
     install -m 0755 ${WORKDIR}/load-drivers ${D}${bindir}
 }
 
@@ -37,7 +33,6 @@ SYSTEMD_PACKAGES = "${PN}"
 SYSTEMD_SERVICE:${PN} += " \
     load-drivers.service \
     rfkill-atboot.service \
-    udata-perms.service \
     htpdate.service \
     "
 SYSTEMD_AUTO_ENABLE = "enable"

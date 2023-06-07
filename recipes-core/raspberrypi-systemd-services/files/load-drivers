@@ -1,5 +1,14 @@
 #!/bin/bash
 modprobe i2c_dev
+# mount udata partition
+mount /dev/mmcblk0p4 /udata
+
+if [ -f /udata/change_perms ]; then
+    chown -R mind:mind /udata
+    chown -R root:root /udata/.elk-system
+    rm -f /udata/change_perms
+    sync
+fi
 
 ELK_SYSTEM_CONF="/udata/.elk-system/elk-system.conf"
 if [ -e $ELK_SYSTEM_CONF ]; then
@@ -27,10 +36,18 @@ fi
 echo "HAT is $AUDIO_HAT"
 echo $AUDIO_HAT > /tmp/audio_hat
 
+ISOLCPU=`cat /sys/devices/system/cpu/isolated | cut -d'-' -f 1`
+
+if [ -z "$ISOLCPU" ]; then
+    echo "No isolcpu"
+    ISOLCPU=0
+else
+    echo "isolcpu = ${ISOLCPU}"
+fi
+
 # Probe the audio driver
 if [ $AUDIO_HAT = "hifi-berry-pro" ] || [ $AUDIO_HAT = "hifi-berry" ]; then
-    modprobe rpi-audio-evl audio_buffer_size=$AUDIO_BUFFER_SIZE audio_hat=$AUDIO_HAT
-		
+    modprobe rpi-audio-evl audio_buffer_size=$AUDIO_BUFFER_SIZE audio_hat=$AUDIO_HAT audio_irq_affinity=$ISOLCPU
     # Give perms for userspace to access audio driver class
     chown -R mind:mind /sys/class/audio_evl
 else
