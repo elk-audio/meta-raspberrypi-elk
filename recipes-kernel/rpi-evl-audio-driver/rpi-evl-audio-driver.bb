@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;m
 
 inherit module
 
-SRC_URI = "gitsm://git@bitbucket.org/mindswteam/rpi-rtdm-audio-driver;protocol=ssh;nobranch=1"
+SRC_URI = "gitsm://git@bitbucket.org/mindswteam/rpi-evl-audio-driver;protocol=ssh;nobranch=1"
 PV = "1.1.0"
 SRCREV = "34da41eecee1e16211233664af3dafb6d6e575c4"
 
