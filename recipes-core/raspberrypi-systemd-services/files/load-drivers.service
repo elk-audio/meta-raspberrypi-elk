@@ -1,6 +1,7 @@
 [Unit]
 Description=Load the required elk audio drivers
-After=systemd-udevd.service udata.mount
+Requires=dev-i2c\x2d1.device
+After=systemd-udevd.service dev-i2c\x2d1.device udata.mount
 
 [Service]
 Type=oneshot

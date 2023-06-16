@@ -1,5 +1,5 @@
 #!/bin/bash
-modprobe i2c_dev
+
 # mount udata partition
 mount /dev/mmcblk0p4 /udata
 
