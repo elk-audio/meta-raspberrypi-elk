@@ -1,0 +1,24 @@
+From c04dbe564d802b0745df1a1a1c90f93b082ede41 Mon Sep 17 00:00:00 2001
+From: Marco Del Fiasco <marco@elk.audio>
+Date: Fri, 16 Jun 2023 15:29:41 +0000
+Subject: [PATCH] Added 'requires' systemd dependency on hciuart service.
+
+---
+ debian/pi-bluetooth.hciuart.service | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/debian/pi-bluetooth.hciuart.service b/debian/pi-bluetooth.hciuart.service
+index 31323d7..daada84 100644
+--- a/debian/pi-bluetooth.hciuart.service
++++ b/debian/pi-bluetooth.hciuart.service
+@@ -1,6 +1,7 @@
+ [Unit]
+ Description=Configure Bluetooth Modems connected by UART
+ ConditionFileNotEmpty=/proc/device-tree/soc/gpio@7e200000/bt_pins/brcm,pins
++Requires=dev-serial1.device
+ After=dev-serial1.device
+ 
+ [Service]
+-- 
+2.34.1
+
