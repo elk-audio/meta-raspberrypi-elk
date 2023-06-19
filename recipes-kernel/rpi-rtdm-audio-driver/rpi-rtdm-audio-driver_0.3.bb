@@ -1,5 +1,6 @@
 SUMMARY = "Recipe for RPI rtdm audio driver"
 HOMEPAGE = "https://github.com/elk-audio/rpi-rtdm-audio-driver"
+
 LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://COPYING;md5=4a0f8ad6a793571b331b0e19e3dd925c"
 

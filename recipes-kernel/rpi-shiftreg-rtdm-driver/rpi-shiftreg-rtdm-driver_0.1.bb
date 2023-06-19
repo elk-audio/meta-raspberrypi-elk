@@ -1,5 +1,6 @@
 SUMMARY = "Recipe for shiftregister rtdm driver for bcm2836 SOCs"
 HOMEPAGE = "https://github.com/elk-audio/rpi-shiftreg-rtdm-driver"
+
 LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = " \
     file://${WORKDIR}/git/COPYING;md5=2c1c00f9d3ed9e24fa69b932b7e7aff2 \
