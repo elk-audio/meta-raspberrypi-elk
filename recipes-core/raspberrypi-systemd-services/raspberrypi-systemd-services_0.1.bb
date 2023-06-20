@@ -43,4 +43,7 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 FILES:${PN} += "${systemd_system_unitdir}/*"
 FILES:${PN} += "${bindir}/*"
 
-RDEPENDS:${PN} = "bash"
+RDEPENDS:${PN} = "\
+    bash \
+    i2c-tools \
+"
