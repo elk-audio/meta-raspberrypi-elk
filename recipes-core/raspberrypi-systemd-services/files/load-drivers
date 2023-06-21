@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# mount udata partition
+# Mount udata partition
 mount /dev/mmcblk0p4 /udata
 
 if [ -f /udata/change_perms ]; then
@@ -19,16 +19,40 @@ else
     cp /etc/elk-system.conf /udata/.elk-system/
     source /etc/elk-system.conf
 fi
-I2C_IS_PCM5122=`i2cdetect -y 1 | grep 4d | cut -d' ' -f 15`
-I2C_IS_PCM1863=`i2cdetect -y 1 | grep 4a | cut -d' ' -f 12`
-I2C_IS_PCM3168A=`i2cdetect -y 1 | grep 44 | cut -d' ' -f 6`
-I2C_IS_CLKGEN=`i2cdetect -y 1 | grep 60 | cut -d' ' -f 2`
 
-if [ "$I2C_IS_PCM5122" == "4d" ] && [ "$I2C_IS_PCM1863" == "4a" ]; then
-    AUDIO_HAT="hifi-berry-pro" 
-elif [ "$I2C_IS_PCM5122" == "4d" ] && [ -z "$I2C_IS_PCM1863" ]; then
-    AUDIO_HAT="hifi-berry"
-elif [ "$I2C_IS_PCM3168A" == "44" ] || [ "$I2C_IS_CLKGEN" == "60" ]; then
+# Probe audio codecs and detect the audio hat
+i2cdetect -y 1 0x4c 0x4f | grep "^40:" | sed 's/^40://' | grep "4[cdef]" > /dev/null
+if [ $? -eq 0 ]; then
+    I2C_PCM5122_DETECTED=true
+else
+    I2C_PCM5122_DETECTED=false
+fi
+i2cdetect -y 1 0x4a 0x4a | grep "^40:" | sed 's/^40://' | grep "4a" > /dev/null
+if [ $? -eq 0 ]; then
+    I2C_PCM1863_DETECTED=true
+else
+    I2C_PCM1863_DETECTED=false
+fi
+i2cdetect -y 1 0x44 0x44 | grep "^40:" | sed 's/^40://' | grep "44" > /dev/null
+if [ $? -eq 0 ]; then
+    I2C_PCM3168A_DETECTED=true
+else
+    I2C_PCM3168A_DETECTED=false
+fi
+i2cdetect -y 1 0x60 0x60 | grep "^60:" | sed 's/^60://' | grep "60" > /dev/null
+if [ $? -eq 0 ]; then
+    I2C_CLKGEN_DETECTED=true
+else
+    I2C_CLKGEN_DETECTED=false
+fi
+
+if $I2C_PCM5122_DETECTED; then
+    if $I2C_PCM1863_DETECTED; then
+        AUDIO_HAT="hifi-berry-pro"
+    else
+        AUDIO_HAT="hifi-berry"
+    fi
+elif $I2C_PCM3168A_DETECTED || $I2C_CLKGEN_DETECTED; then
     AUDIO_HAT="elk-pi"
 else
     AUDIO_HAT="elkpi-stereo"
@@ -36,8 +60,8 @@ fi
 echo "HAT is $AUDIO_HAT"
 echo $AUDIO_HAT > /tmp/audio_hat
 
+# Detect isolcpu settings
 ISOLCPU=`cat /sys/devices/system/cpu/isolated | cut -d'-' -f 1`
-
 if [ -z "$ISOLCPU" ]; then
     echo "No isolcpu"
     ISOLCPU=0
