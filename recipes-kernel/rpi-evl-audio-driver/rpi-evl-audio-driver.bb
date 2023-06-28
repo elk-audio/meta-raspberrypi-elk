@@ -8,7 +8,7 @@ inherit module
 SRC_URI = "gitsm://github.com/elk-audio/rpi-evl-audio-driver.git;protocol=https;nobranch=1"
 
 PV = "1.1.0"
-SRCREV = "34da41eecee1e16211233664af3dafb6d6e575c4"
+SRCREV = "e6e17d44282f5bc33403dd369dc3c18beff3426b"
 
 S = "${WORKDIR}/git"
 
