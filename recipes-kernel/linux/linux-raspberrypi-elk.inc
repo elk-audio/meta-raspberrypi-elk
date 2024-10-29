@@ -14,8 +14,14 @@ require recipes-kernel/linux/linux-yocto.inc
 
 SRC_URI += " \
     ${@bb.utils.contains("INITRAMFS_IMAGE_BUNDLE", "1", "file://initramfs-image-bundle.cfg", "", d)} \
-    ${@bb.utils.contains("MACHINE_FEATURES", "vc4graphics", "file://vc4graphics.cfg", "", d)} \
     "
+# TODO: make this include work
+# hint? PREFERRED_PROVIDER_virtual/kernel="linux-raspberrypi"
+#       and PREFERRED_VERSION_linux-raspberrypi4%"
+#SRC_URI += " \
+#    ${@bb.utils.contains("INITRAMFS_IMAGE_BUNDLE", "1", "file://initramfs-image-bundle.cfg", "", d)} \
+#    ${@bb.utils.contains("MACHINE_FEATURES", "vc4graphics", "file://vc4graphics.cfg", "", d)} \
+#    "
 
 KCONFIG_MODE = "--alldefconfig"
 KBUILD_DEFCONFIG_raspberrypi0-wifi ?= "bcmrpi_defconfig"
