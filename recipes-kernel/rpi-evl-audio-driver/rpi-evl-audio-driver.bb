@@ -7,8 +7,8 @@ inherit module
 
 SRC_URI = "gitsm://github.com/elk-audio/rpi-evl-audio-driver.git;protocol=https;nobranch=1"
 
-PV = "1.1.0"
-SRCREV = "e6e17d44282f5bc33403dd369dc3c18beff3426b"
+PV = "1.1.1"
+SRCREV = "c20005e796cc910478cdd8bad53428a5d119621a"
 
 S = "${WORKDIR}/git"
 
@@ -20,7 +20,7 @@ RPROVIDES:${PN} += "kernel-module-pcm3168a-elk-${KERNEL_VERSION}"
 RPROVIDES:${PN} += "kernel-module-pcm1863-elk-${KERNEL_VERSION}"
 RPROVIDES:${PN} += "kernel-module-pcm5122-elk-${KERNEL_VERSION}"
 
-MODULE_INSTALL_DIR = "/lib/modules/${KERNEL_VERSION}"
+MODULE_INSTALL_DIR = "/usr/lib/modules/${KERNEL_VERSION}"
 
 do_install() {
     #install the kernel module to standard location on rootfs
