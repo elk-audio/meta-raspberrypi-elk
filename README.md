@@ -37,4 +37,4 @@ As a consequence:
   * `sensei` application will not work
 
 ---
-Copyright 2017-2023 ELK Audio AB, Stockholm, Sweden.
+Copyright 2017-2025 ELK Audio AB, Stockholm, Sweden.
