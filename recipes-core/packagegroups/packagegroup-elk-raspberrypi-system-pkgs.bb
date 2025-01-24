@@ -10,12 +10,13 @@ inherit packagegroup
 
 RDEPENDS:packagegroup-elk-raspberrypi-system-pkgs = "\
     raspberrypi-systemd-services \
-    linux-firmware-rpidistro-bcm43430 \
     linux-firmware-rpidistro-bcm43455 \
-    bluez-firmware-rpidistro-bcm43430a1-hcd \
     bluez-firmware-rpidistro-bcm4345c0-hcd \
+    linux-firmware-rpidistro-bcm43456 \
+    bluez-firmware-rpidistro-bcm4345c5-hcd \
     iw \
-    wireless-regdb \
+    wireless-regdb-static \
+    bluez5 \
     libubootenv \
     u-boot-fw-utils \
     wpa-supplicant \
@@ -27,6 +28,3 @@ RDEPENDS:packagegroup-elk-raspberrypi-system-pkgs = "\
     kernel-devicetree \
     kernel-image \
 "
-#    rpi-rtdm-audio-driver 
-#    spi-rtdm-audio-driver 
-#    rpi-shiftreg-rtdm-driver 
