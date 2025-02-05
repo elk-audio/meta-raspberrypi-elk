@@ -1,6 +1,9 @@
 SUMMARY = "Recipe for Audio EVL driver for RPI devices"
 LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;md5=801f80980d171dd6425610833a22dbe6"
+
+inherit module
+
 SRCREV = "89f4b2628554328bbb61fdb1b3cb5200b4ae3a12"
 PV = "1.1.1"
 
@@ -8,7 +11,6 @@ SRC_URI = "gitsm://github.com/elk-audio/rpi-evl-audio-driver.git;protocol=https;
 
 S = "${WORKDIR}/git"
 
-inherit module
 
 do_install() {
     #install the kernel module to standard location on rootfs
