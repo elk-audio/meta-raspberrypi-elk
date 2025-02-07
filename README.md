@@ -16,7 +16,7 @@ common to products built with Elk Pi as a platform shall also be in this layer.
 
 The key contributions of this layer to Elk PI Audio OS image are:
 
-  * Custom Linux kernel with I-Pipe and Xenomai enabled.
+  * Custom Linux kernel with Xenomai 4 enabled.
   * U-boot configuration and boot scripts for Elk Pi.
   * Elk System configurations.
   * SWUpdate configuration and swupdate client for Elk Pi.
