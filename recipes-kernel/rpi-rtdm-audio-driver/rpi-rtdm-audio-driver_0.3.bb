@@ -11,6 +11,7 @@ SRC_URI = "git://github.com/elk-audio/rpi-rtdm-audio-driver.git;protocol=https;n
 
 S = "${WORKDIR}/git"
 
+MODULE_INSTALL_DIR = "/lib/modules/${KERNEL_VERSION}"
 
 do_install() {
     install -d ${D}${MODULE_INSTALL_DIR}
@@ -24,5 +25,3 @@ RPROVIDES:${PN} += "kernel-module-pcm1863-elk-${KERNEL_VERSION}"
 RPROVIDES:${PN} += "kernel-module-pcm5122-elk-${KERNEL_VERSION}"
 
 FILES:${PN} += "${MODULE_INSTALL_DIR}/*"
-
-MODULE_INSTALL_DIR = "/lib/modules/${KERNEL_VERSION}"

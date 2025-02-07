@@ -12,6 +12,8 @@ S = "${WORKDIR}/git/boards/elk_pi"
 
 inherit module
 
+MODULE_INSTALL_DIR = "/lib/modules/${KERNEL_VERSION}"
+
 do_install() {
     #install the kernel module to standard location on rootfs
     install -d ${D}${MODULE_INSTALL_DIR}
@@ -23,5 +25,3 @@ do_install() {
 RPROVIDES:${PN} = "kernel-module-shiftreg-rtdm-${KERNEL_VERSION}"
 
 FILES:${PN} += "${MODULE_INSTALL_DIR}/*"
-
-MODULE_INSTALL_DIR = "/lib/modules/${KERNEL_VERSION}"

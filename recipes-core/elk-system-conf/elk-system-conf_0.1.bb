@@ -8,11 +8,11 @@ SRC_URI = "\
     file://blacklist.conf \
 "
 
+MODPROBE_CONF_DIR = "/etc/modprobe.d/"
+
 do_install() {
     install -d ${D}${MODPROBE_CONF_DIR}
     install -m 0644 ${WORKDIR}/blacklist.conf ${D}${MODPROBE_CONF_DIR}
 }
 
 FILES:${PN} = "${MODPROBE_CONF_DIR}*"
-
-MODPROBE_CONF_DIR = "/etc/modprobe.d/"

@@ -10,6 +10,8 @@ S = "${WORKDIR}/git"
 
 inherit module
 
+MODULE_INSTALL_DIR = "/lib/modules/${KERNEL_VERSION}"
+
 do_install() {
     install -d ${D}${MODULE_INSTALL_DIR}
     install -m 0644 ${S}/*.ko ${D}${MODULE_INSTALL_DIR}
@@ -18,5 +20,3 @@ do_install() {
 RPROVIDES:${PN} += "kernel-module-spi-audio-rtdm-${KERNEL_VERSION}"
 
 FILES:${PN} += "${MODULE_INSTALL_DIR}/*"
-
-MODULE_INSTALL_DIR = "/lib/modules/${KERNEL_VERSION}"

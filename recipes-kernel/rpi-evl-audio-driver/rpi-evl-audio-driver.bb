@@ -12,6 +12,8 @@ SRC_URI = "gitsm://github.com/elk-audio/rpi-evl-audio-driver.git;protocol=https;
 S = "${WORKDIR}/git"
 
 
+MODULE_INSTALL_DIR = "/usr/lib/modules/${KERNEL_VERSION}"
+
 do_install() {
     #install the kernel module to standard location on rootfs
     install -d ${D}${MODULE_INSTALL_DIR}
@@ -30,4 +32,3 @@ FILES:${PN} += "${MODULE_INSTALL_DIR}/*"
 
 COMPATIBLE_MACHINE = "^rpi$"
 
-MODULE_INSTALL_DIR = "/usr/lib/modules/${KERNEL_VERSION}"
