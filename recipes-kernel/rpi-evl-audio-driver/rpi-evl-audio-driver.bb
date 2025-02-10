@@ -11,7 +11,6 @@ SRC_URI = "gitsm://github.com/elk-audio/rpi-evl-audio-driver.git;protocol=https;
 
 S = "${WORKDIR}/git"
 
-
 MODULE_INSTALL_DIR = "/usr/lib/modules/${KERNEL_VERSION}"
 
 do_install() {
@@ -31,4 +30,3 @@ RPROVIDES:${PN} += "kernel-module-pcm5122-elk-${KERNEL_VERSION}"
 FILES:${PN} += "${MODULE_INSTALL_DIR}/*"
 
 COMPATIBLE_MACHINE = "^rpi$"
-
