@@ -1,6 +1,5 @@
 SUMMARY = "All custom systemd services related to the machine Raspberrypi"
 HOMEPAGE = "https://github.com/elk-audio/meta-raspberrypi-elk"
-
 LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;md5=801f80980d171dd6425610833a22dbe6"
 
@@ -12,13 +11,15 @@ SRC_URI = "\
 "
 
 S = "${WORKDIR}"
+SYSTEMD_PACKAGES = "${PN}"
+SYSTEMD_SERVICE:${PN} += " \
+    load-drivers.service \
+    rfkill-atboot.service \
+    htpdate.service \
+    "
+SYSTEMD_AUTO_ENABLE = "enable"
 
 inherit systemd
-
-PN = "raspberrypi-systemd-services"
-
-INHIBIT_PACKAGE_STRIP = "1"
-INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
 do_install () {
     install -d ${D}${systemd_system_unitdir}
@@ -29,21 +30,17 @@ do_install () {
     install -m 0755 ${WORKDIR}/load-drivers ${D}${bindir}
 }
 
-NATIVE_SYSTEMD_SUPPORT = "1"
-SYSTEMD_PACKAGES = "${PN}"
-SYSTEMD_SERVICE:${PN} += " \
-    load-drivers.service \
-    rfkill-atboot.service \
-    htpdate.service \
-    "
-SYSTEMD_AUTO_ENABLE = "enable"
-
 PACKAGE_ARCH = "${MACHINE_ARCH}"
-
-FILES:${PN} += "${systemd_system_unitdir}/*"
-FILES:${PN} += "${bindir}/*"
 
 RDEPENDS:${PN} = "\
     bash \
     i2c-tools \
 "
+
+FILES:${PN} += "${systemd_system_unitdir}/*"
+FILES:${PN} += "${bindir}/*"
+
+PN = "raspberrypi-systemd-services"
+INHIBIT_PACKAGE_STRIP = "1"
+INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
+NATIVE_SYSTEMD_SUPPORT = "1"

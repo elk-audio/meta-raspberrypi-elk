@@ -4,6 +4,7 @@
 # - Minimum and maximum CPU frequency
 # - Enable I2S
 # - Disable vc4-fkms-v3d
+# - Disable krnbt
 # - force_eeprom_read=0
 
 def get_baudrate(d):
@@ -15,5 +16,6 @@ do_deploy:append() {
     sed -i '/arm_freq_min=/c\arm_freq_min=800' ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
     sed -i '/dtparam=i2s=/c\dtparam=i2s=on' ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
     sed -i '/dtparam=vc4-fkms-v3d=/c\#dtoverlay=vc4-fkms-v3d' ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "dtparam=krnbt=off" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
     echo "force_eeprom_read=0" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
 }
