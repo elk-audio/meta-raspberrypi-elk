@@ -70,7 +70,7 @@ else
 fi
 
 # Probe the audio driver
-if [ $AUDIO_HAT = "hifi-berry-pro" ] || [ $AUDIO_HAT = "hifi-berry" ]; then
+if [ $AUDIO_HAT = "hifi-berry-pro" ] || [ $AUDIO_HAT = "hifi-berry" ] || [ $AUDIO_HAT = "elk-pi"]; then
     modprobe rpi-audio-evl audio_buffer_size=$AUDIO_BUFFER_SIZE audio_hat=$AUDIO_HAT audio_irq_affinity=$ISOLCPU
     # Give perms for userspace to access audio driver class
     chown -R mind:mind /sys/class/audio_evl
